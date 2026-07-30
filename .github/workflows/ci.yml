@@ -1,0 +1,84 @@
+name: проверки
+
+# Пять реализаций формата обязаны сходиться с одним набором векторов и друг с
+# другом. Если это перестанет проверяться на каждом изменении, они разъедутся
+# молча — а молчаливое расхождение и есть худший исход для этого продукта.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  spec:
+    name: векторы формата
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: python3 spec/tools/check.py
+      - name: векторы пересобираются побайтово
+        run: |
+          before=$(find spec/vectors -name '*.json' | sort | xargs sha256sum | sha256sum)
+          python3 spec/tools/genvectors.py > /dev/null
+          after=$(find spec/vectors -name '*.json' | sort | xargs sha256sum | sha256sum)
+          test "$before" = "$after" || { echo "векторы изменились — это смена формата"; exit 1; }
+
+  go:
+    name: верификатор на Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }
+      - run: gofmt -l verifier/go | (! grep .)
+      - run: go vet -C verifier/go ./...
+      - run: go test -C verifier/go ./...
+      - run: sh verifier/go/build.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: aihash-verify, path: verifier/dist/aihash-verify* }
+
+  javascript:
+    name: браузерное ядро
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: python3 verifier/build.py
+      - run: node verifier/tests/conformance.js
+
+  python:
+    name: Python SDK
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "${{ matrix.python }}" }
+      - run: python3 verifier/build.py
+      - run: pip install -e "python[dev]"
+      - run: python -m pytest python/tests -q
+
+  typescript:
+    name: TypeScript SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: python3 verifier/build.py
+      - run: sh verifier/go/build.sh
+      - run: pip install -e python
+      - run: npm ci --prefix typescript || npm install --prefix typescript
+      - name: сверка четырёх реализаций
+        run: npm test --prefix typescript

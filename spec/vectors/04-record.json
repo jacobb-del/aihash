@@ -1,0 +1,156 @@
+{
+  "vector": "04-record",
+  "format": "aihash/1",
+  "description": "Полные записи сценария и их содержательные отпечатки.",
+  "stream_id": "voice-eu-3",
+  "records": [
+    {
+      "seq": 1,
+      "ts": 1773325800000,
+      "fields": [
+        {
+          "name": "_beacon.source",
+          "salt": "8326803ead3d23878e16a8f3d4d5e86d",
+          "s": "drand:quicknet"
+        },
+        {
+          "name": "_beacon.round",
+          "salt": "7a44f662c92505a5f2d31f8d6d6f05dd",
+          "s": "4821293"
+        },
+        {
+          "name": "_beacon.value",
+          "salt": "fe441b31f1cfe1829d2318757effe2e3",
+          "b": "YLn5YZcR6kpLRkPHewDhe5O6FzbrKmBCOz/PmKLe9ZQ="
+        }
+      ],
+      "content_root": "4d3a3a1c95fbebade8fea5b550804a5cdab888aed9f0b6b29d4b4c5056c8f4f6",
+      "link": "2bab324004eef0a95a70744da5bd3b6e67e9885bb95d19fdae1710fd49c2a508"
+    },
+    {
+      "seq": 2,
+      "ts": 1773325862000,
+      "fields": [
+        {
+          "name": "actor",
+          "salt": "af6c1445530f16951d4ea4639e8d258c",
+          "s": "customer"
+        },
+        {
+          "name": "customer.name",
+          "salt": "60797a2fa57bd771cbc0e8e4dff2496e",
+          "s": "Пётр Ильич Сергеев"
+        },
+        {
+          "name": "customer.phone",
+          "salt": "56fa215156f5af1c66aa597dbd66ea61",
+          "s": "+7 916 555-01-72"
+        },
+        {
+          "name": "input.text",
+          "salt": "a40920abc0ea2c28b3fe76eb01fba04e",
+          "s": "Когда придёт возврат за отменённый заказ?"
+        }
+      ],
+      "content_root": "4b3cc96c60a86599c0bc340fc39dcf91b7584839cb26840fc82644914c71b690",
+      "link": "aefc22df07721a17f054f95f77d9d166117ce4f8c20520f50c3daa4aeb6a1968"
+    },
+    {
+      "seq": 3,
+      "ts": 1773325928000,
+      "fields": [
+        {
+          "name": "actor",
+          "salt": "7f89a7f38fb45d253d849ed24d0839fb",
+          "s": "assistant"
+        },
+        {
+          "name": "tool.name",
+          "salt": "8cbfe247ed6ca1cee5f4a13147afaf26",
+          "s": "orders.get"
+        },
+        {
+          "name": "tool.result",
+          "salt": "2c99c61bfbae428a353be616d0f82c5c",
+          "s": "{\"order\":\"A-40912\",\"status\":\"cancelled\"}"
+        }
+      ],
+      "content_root": "dfc42f6d955676b63abc5b1ccd22ab07584ead02ceaeffa358192318b2048a27",
+      "link": "07122b002bed01ee388c7d1535b2b1fe30a886af7d37d5ad4ac2fdd87152944d"
+    },
+    {
+      "seq": 4,
+      "ts": 1773325961000,
+      "fields": [
+        {
+          "name": "actor",
+          "salt": "ff287e9387058f995766335e6e760b3a",
+          "s": "assistant"
+        },
+        {
+          "name": "output.text",
+          "salt": "4b34ab1cfd9a91fd8c1ac5cbd7b7d811",
+          "s": "возврат придёт в течение 5 дней"
+        },
+        {
+          "name": "config.prompt_version",
+          "salt": "2fb24f73875159a311a018c761370b37",
+          "s": "v14"
+        },
+        {
+          "name": "config.model",
+          "salt": "1fe65754c2f5fb4231410c37d3c50c83",
+          "s": "gpt-4o-2026-02-11"
+        },
+        {
+          "name": "config.human_review",
+          "salt": "7ac5439de601342bf893630b97507014",
+          "s": ""
+        }
+      ],
+      "content_root": "1818b697854b51a3e49ee7ccdd98bdabef611ec6b5775856abc9b735c91e2042",
+      "link": "af668697e241dddb8572ac47119bff4cb21a889c57f6aa9bed2beda8a9d1347f"
+    },
+    {
+      "seq": 5,
+      "ts": 1773325999000,
+      "fields": [
+        {
+          "name": "actor",
+          "salt": "9ea7156b13430c01ced576d783751ce5",
+          "s": "system"
+        },
+        {
+          "name": "billing.op",
+          "salt": "128582536db78a505dbcbb867033ebae",
+          "s": "RF-88214"
+        }
+      ],
+      "content_root": "748d595c88a30025118ddeeef2103b14066dc4c6ef19e2ed5e7d9c4912df2871",
+      "link": "2c6a670fb224b474b653d5c727668d504e423fa0863a1d8cd298c465e704dfa4"
+    },
+    {
+      "seq": 6,
+      "ts": 1780564320000,
+      "fields": [
+        {
+          "name": "_redaction.target_seq",
+          "salt": "f80bdd9b1a777e39c92cf7f7a21ad638",
+          "s": "2"
+        },
+        {
+          "name": "_redaction.fields",
+          "salt": "95ca7f2a3eebcc1d9fb52fefd87968cd",
+          "s": "customer.name,customer.phone"
+        },
+        {
+          "name": "_redaction.reason",
+          "salt": "10ae60ea8c8d9a61d0d43b62edfee6c5",
+          "s": "запрос на удаление персональных данных"
+        }
+      ],
+      "content_root": "b16eaddc5a316376250332707b2ba28d2775361360f21baff751d4954b122459",
+      "link": "e41e6c57cd7c8b11ec049e354fb0c1340b679c8a9ba19c10fcbebdeb365b3115"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "vector": "05-chain",
+  "format": "aihash/1",
+  "description": "Нулевое звено и цепь. Звено связывает предыдущее звено, seq, отпечаток содержимого и заявленное время.",
+  "streams": [
+    {
+      "stream_id": "voice-eu-3",
+      "genesis": "e359860445203ec913ed0607eaf4f7cf9493673340f704797701a1a2cb2a42fb",
+      "links": [
+        {
+          "seq": 1,
+          "ts": 1773325800000,
+          "content_root": "4d3a3a1c95fbebade8fea5b550804a5cdab888aed9f0b6b29d4b4c5056c8f4f6",
+          "link": "2bab324004eef0a95a70744da5bd3b6e67e9885bb95d19fdae1710fd49c2a508"
+        },
+        {
+          "seq": 2,
+          "ts": 1773325862000,
+          "content_root": "4b3cc96c60a86599c0bc340fc39dcf91b7584839cb26840fc82644914c71b690",
+          "link": "aefc22df07721a17f054f95f77d9d166117ce4f8c20520f50c3daa4aeb6a1968"
+        },
+        {
+          "seq": 3,
+          "ts": 1773325928000,
+          "content_root": "dfc42f6d955676b63abc5b1ccd22ab07584ead02ceaeffa358192318b2048a27",
+          "link": "07122b002bed01ee388c7d1535b2b1fe30a886af7d37d5ad4ac2fdd87152944d"
+        },
+        {
+          "seq": 4,
+          "ts": 1773325961000,
+          "content_root": "1818b697854b51a3e49ee7ccdd98bdabef611ec6b5775856abc9b735c91e2042",
+          "link": "af668697e241dddb8572ac47119bff4cb21a889c57f6aa9bed2beda8a9d1347f"
+        },
+        {
+          "seq": 5,
+          "ts": 1773325999000,
+          "content_root": "748d595c88a30025118ddeeef2103b14066dc4c6ef19e2ed5e7d9c4912df2871",
+          "link": "2c6a670fb224b474b653d5c727668d504e423fa0863a1d8cd298c465e704dfa4"
+        },
+        {
+          "seq": 6,
+          "ts": 1780564320000,
+          "content_root": "b16eaddc5a316376250332707b2ba28d2775361360f21baff751d4954b122459",
+          "link": "e41e6c57cd7c8b11ec049e354fb0c1340b679c8a9ba19c10fcbebdeb365b3115"
+        }
+      ]
+    },
+    {
+      "stream_id": "billing-1",
+      "genesis": "aa3aa1f7a353bee5aa2450e45f97eeb96de16d9726a7474b3477c65ce28b5037",
+      "links": [
+        {
+          "seq": 1,
+          "ts": 1773326000000,
+          "content_root": "78a1f1ccd3120a68900cb20b6cdc40f81b68998465ecc2084a6509cb58c05c3f",
+          "link": "e242b8bbb082381a3697678302ded3d435e083205a48c14c617fe84cefc4c64c"
+        },
+        {
+          "seq": 2,
+          "ts": 1773326001000,
+          "content_root": "59f2ffaeb065f3c0266118e20b8feb2dd4dbe07bc79fe9318d4c8ef7383db7f3",
+          "link": "70349a9a9fd68a51e1dae1735a48feb707edc90d60589a86751ba31046af3922"
+        }
+      ]
+    }
+  ]
+}

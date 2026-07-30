@@ -1,0 +1,13 @@
+{
+  "format": "aihash/1",
+  "stream_id": "voice-eu-3",
+  "period_id": "2026-07-29",
+  "first_seq": 1,
+  "last_seq": 10,
+  "count": 10,
+  "link_before": "e359860445203ec913ed0607eaf4f7cf9493673340f704797701a1a2cb2a42fb",
+  "link_last": "306442269145f8fb3fbcfdaf4f7136309335db8809fb9a39d22992d178420d20",
+  "segment_root": "d4fbc02fe00cda994ad88f13ae774a94c7947199aad1e6d89f955633d37aab7e",
+  "prev_checkpoint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "checkpoint": "5ed8e2eb39dcf063532e9bb41d44195e79298eb344e75452b95d73ddfefb27a3"
+}

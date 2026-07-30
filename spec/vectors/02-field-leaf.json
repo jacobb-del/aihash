@@ -1,0 +1,44 @@
+{
+  "vector": "02-field-leaf",
+  "format": "aihash/1",
+  "description": "Лист дерева полей. Проверяет UTF-8, пустое значение, произвольные байты.",
+  "salt_rule": "sha256('aihash/v1/test-salt/{stream}/{seq}/{name}')[:16]",
+  "cases": [
+    {
+      "name": "actor",
+      "salt": "2367bd298c980b89f7615b381b45a30d",
+      "s": "assistant",
+      "leaf": "72623e7e38ad4bb68675e9a935ee53f2d9f5d0aeb2e0117edb4ee4a7c49e68ab"
+    },
+    {
+      "name": "output.text",
+      "salt": "48653289397456824cb997abd29c7237",
+      "s": "возврат придёт в течение 5 дней",
+      "leaf": "8fb5b912c711a5df0c0f022ce9c5418a46939c6ed185148c32971b2a1fa159a3"
+    },
+    {
+      "name": "config.human_review",
+      "salt": "b52e76b83a6fd136d475ca65e37d8f84",
+      "s": "",
+      "leaf": "a390d95c9bfce931e01efe1a115ea9654e21164ec70d2f0346361a48857224af"
+    },
+    {
+      "name": "_beacon.value",
+      "salt": "44bed3d3023ac9f366fc5a3f803f08b6",
+      "b": "YLn5YZcR6kpLRkPHewDhe5O6FzbrKmBCOz/PmKLe9ZQ=",
+      "leaf": "22adf24b414cd6f6ec2b71c7c2dfe1e4fc8b6faf77aaa1d6aa788ad247882da3"
+    },
+    {
+      "name": "поле.с.юникодом",
+      "salt": "a1fa4a860e272db51cb73673cd794ca4",
+      "s": "значение\nс переводом строки",
+      "leaf": "1f4aaf564daadba27a3da6bb740abb655e89e90f9e63ac93fce8ca3c49d2a90f"
+    },
+    {
+      "name": "x",
+      "salt": "f30bc15ed53828a602aeadb897f8cf18",
+      "b": "AAEC/w==",
+      "leaf": "eace17f59677548150f0c6bfa818636b86f9bdacb15ddb10549da0f7af66c1e6"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "vector": "07-segment",
+  "format": "aihash/1",
+  "description": "Отметка отрезка. Отметки одного потока связаны между собой — иначе можно переписать целые сутки.",
+  "cases": [
+    {
+      "stream_id": "voice-eu-3",
+      "period_id": "2026-03-12",
+      "first_seq": 1,
+      "last_seq": 5,
+      "count": 5,
+      "link_before": "e359860445203ec913ed0607eaf4f7cf9493673340f704797701a1a2cb2a42fb",
+      "link_last": "2c6a670fb224b474b653d5c727668d504e423fa0863a1d8cd298c465e704dfa4",
+      "segment_root": "46c6521ff2c6498ca49f25a57525fad85c35be3c65b63288ef2ccd63e267ab18",
+      "prev_checkpoint": "0000000000000000000000000000000000000000000000000000000000000000",
+      "checkpoint": "d54bae4b632c5819a3afc9afbcd0784e8d02d1b93fa521ae7b31fcc9d768a8cb"
+    },
+    {
+      "stream_id": "voice-eu-3",
+      "period_id": "2026-06-04",
+      "first_seq": 6,
+      "last_seq": 6,
+      "count": 1,
+      "link_before": "2c6a670fb224b474b653d5c727668d504e423fa0863a1d8cd298c465e704dfa4",
+      "link_last": "e41e6c57cd7c8b11ec049e354fb0c1340b679c8a9ba19c10fcbebdeb365b3115",
+      "segment_root": "7d12f2ccee5e15fbc3e165a5c1804d0ba52fdf0ebff3fc7474ae9395559603e0",
+      "prev_checkpoint": "d54bae4b632c5819a3afc9afbcd0784e8d02d1b93fa521ae7b31fcc9d768a8cb",
+      "checkpoint": "74745bbd06dc49e09a80ff56bd8b86e65c830f80bd10801263de6f94af6d9edf"
+    },
+    {
+      "stream_id": "billing-1",
+      "period_id": "2026-03-12",
+      "first_seq": 1,
+      "last_seq": 2,
+      "count": 2,
+      "link_before": "aa3aa1f7a353bee5aa2450e45f97eeb96de16d9726a7474b3477c65ce28b5037",
+      "link_last": "70349a9a9fd68a51e1dae1735a48feb707edc90d60589a86751ba31046af3922",
+      "segment_root": "7fc49a905595800b1db4e333275e31a8de03843062223bb8733c0f19cbb751d3",
+      "prev_checkpoint": "0000000000000000000000000000000000000000000000000000000000000000",
+      "checkpoint": "21e71cdb0b45e880d0c8bd6623e72ed48d931f57c3b9ff5b7ad521d68feb9a59"
+    }
+  ]
+}

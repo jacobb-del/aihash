@@ -1,0 +1,15 @@
+{
+  "format": "aihash/1",
+  "hash": "sha256",
+  "files": [
+    "01-varint.json",
+    "02-field-leaf.json",
+    "03-merkle.json",
+    "04-record.json",
+    "05-chain.json",
+    "06-redaction.json",
+    "07-segment.json",
+    "08-day.json",
+    "09-inclusion.json"
+  ]
+}

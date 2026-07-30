@@ -1,0 +1,14 @@
+{
+  "format": "aihash/1",
+  "realm_id": "romashka-prod",
+  "date": "2026-07-29",
+  "streams": [
+    "voice-eu-3"
+  ],
+  "segment_checkpoints": [
+    "5ed8e2eb39dcf063532e9bb41d44195e79298eb344e75452b95d73ddfefb27a3"
+  ],
+  "day_root": "e8d3a3597ceaccb433017a882f87d818300261361af3f07ad6cba2dd730d9278",
+  "prev_checkpoint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "day_checkpoint": "fef450302adb72bd026a7b7eb5cbaa3a9c7469af48e2025c1739576b916b5041"
+}

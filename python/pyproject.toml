@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aihash"
+version = "0.1.0"
+description = "Доказуемый журнал работы ИИ-системы: сохранность и пломба"
+# Страницей на PyPI служит корневой README, а не readme этого каталога: человек
+# приходит туда за ответом «что это и как проверить», а не за списком классов.
+# Ссылки внутри него абсолютные — на PyPI нет наших файлов, относительные пути
+# там ведут в никуда.
+readme = "README.md"
+requires-python = ">=3.9"
+license = "Apache-2.0"
+keywords = ["audit", "audit-log", "tamper-evident", "provenance",
+            "rfc3161", "timestamping", "compliance", "gdpr", "llm", "ai-agents"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Legal Industry",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: System :: Logging",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/jacobb-del/aihash"
+Repository = "https://github.com/jacobb-del/aihash"
+Issues = "https://github.com/jacobb-del/aihash/issues"
+Documentation = "https://github.com/jacobb-del/aihash/blob/main/FORMAT.md"
+
+[project.optional-dependencies]
+ots = ["opentimestamps-client>=0.7"]
+otel = ["opentelemetry-sdk>=1.20"]
+s3 = ["boto3>=1.28"]
+# setuptools и wheel здесь не ради сборки, а ради теста test_package.py: без
+# них он молча пропускался бы, а он — единственная защита от того, что колесо
+# уедет без верификатора.
+dev = ["pytest>=7", "opentelemetry-sdk>=1.20", "boto3>=1.28", "moto[s3]>=5",
+       "setuptools>=77", "wheel"]
+
+[project.scripts]
+aihash = "aihash.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["aihash*"]
+
+[tool.setuptools.package-data]
+# assets/trust.json — вшитый набор корней служб штампов. Без него установленный
+# пакет теряет способность проверять подпись, и исправный журнал выглядит
+# неподтверждённым. За расхождением с spec/trust следит test_trust_store.py.
+aihash = ["assets/*.html", "assets/trust.json", "py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

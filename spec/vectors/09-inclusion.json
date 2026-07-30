@@ -1,0 +1,38 @@
+{
+  "vector": "09-inclusion",
+  "format": "aihash/1",
+  "description": "От поля записи до отпечатка под пломбой. Это содержимое пакета .seal для одной записи.",
+  "stream_id": "voice-eu-3",
+  "seq": 4,
+  "period_id": "2026-03-12",
+  "content_root": "1818b697854b51a3e49ee7ccdd98bdabef611ec6b5775856abc9b735c91e2042",
+  "link": "af668697e241dddb8572ac47119bff4cb21a889c57f6aa9bed2beda8a9d1347f",
+  "segment_leaf": "dcb2a91273128a8c5d8c2e4fba5631c881153390a28c5b255b9acb081a499275",
+  "leaf_index": 3,
+  "segment_path": [
+    {
+      "side": "left",
+      "h": "a280832c42226d8ac62bc79bafcef8acbcf0efea19e646d97c7ee8571ec5c0e1"
+    },
+    {
+      "side": "left",
+      "h": "ec7381e0af29f778305f97b3a1bcb0f901b293ad4785fb26c49f1799be603f42"
+    },
+    {
+      "side": "right",
+      "h": "1894af1871e1db7938715951ae0b6eb2692a6fd0e7837189def21f3a466b33e4"
+    }
+  ],
+  "segment_root": "46c6521ff2c6498ca49f25a57525fad85c35be3c65b63288ef2ccd63e267ab18",
+  "segment_checkpoint": "d54bae4b632c5819a3afc9afbcd0784e8d02d1b93fa521ae7b31fcc9d768a8cb",
+  "day_leaf": "fc74fee48a25d03c90a6b75f74f16c402f6e19e3e50a3d1758d005ac5997132b",
+  "day_leaf_index": 1,
+  "day_path": [
+    {
+      "side": "left",
+      "h": "ee66aa23591f016b83a5d0166e0787ce5703a0ed6f9a867a1c88a14f79cc65fa"
+    }
+  ],
+  "day_root": "66437d880b83b8ba59753e00c05397c03af509e733d09e6f5a952915bf517fec",
+  "day_checkpoint": "4bc7e718f05a3796770afd13b811db7fb4fdf3e9bea2d88b31a77b5c09560d92"
+}

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проверка пакета aihash</title>
+<style>
+:root{--ink:#1a1a18;--dim:#5f5e5a;--line:#d8d6cf;--bg:#fff;--panel:#f5f4ef;
+ --page:#e9e8e2;--okbg:#eaf3de;--okink:#3b6d11;--wbg:#faeeda;--wink:#854f0b;
+ --ebg:#fcebeb;--eink:#a32d2d}
+@media (prefers-color-scheme:dark){
+:root{--ink:#e8e7e2;--dim:#a3a29c;--line:#3a3a37;--bg:#1c1c1a;--panel:#252523;
+ --page:#131312;--okbg:#1d2b12;--okink:#97c459;--wbg:#2e2312;--wink:#ef9f27;
+ --ebg:#2b1414;--eink:#f09595}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+ font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:760px;margin:28px auto;padding:0 16px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:12px;
+ padding:26px 30px}
+@media (max-width:480px){.card{padding:18px 16px}.wrap{padding:0 10px}}
+h1{font-size:20px;font-weight:600;margin:0 0 4px}
+p.lead{color:var(--dim);font-size:14px;margin:0 0 22px}
+#drop{border:2px dashed var(--line);border-radius:10px;padding:38px 20px;
+ text-align:center;color:var(--dim);cursor:pointer;transition:border-color .15s}
+#drop.hot{border-color:var(--ink);color:var(--ink)}
+#drop b{color:var(--ink);font-weight:600}
+input[type=file]{display:none}
+.verdict{border-radius:10px;padding:16px 18px;margin:22px 0 0}
+.verdict.sealed{background:var(--okbg);color:var(--okink)}
+.verdict.open,.verdict.unverified{background:var(--wbg);color:var(--wink)}
+.verdict.broken{background:var(--ebg);color:var(--eink)}
+.verdict h2{font-size:16px;font-weight:600;margin:0 0 6px}
+.verdict p{margin:0;font-size:13px;line-height:1.5}
+.mark{font-weight:600;letter-spacing:.04em;font-size:12px;text-transform:uppercase;
+ display:block;margin-bottom:6px}
+.bar{position:relative;height:30px;margin:16px 0 4px}
+.bar .line{position:absolute;top:9px;left:0;right:0;height:2px;background:currentColor;
+ opacity:.5}
+.bar .cap{position:absolute;top:5px;width:2px;height:10px;background:currentColor}
+.bar .cap.l{left:0}.bar .cap.r{right:0}
+.bar .lb{position:absolute;top:18px;font-size:12px;max-width:48%}
+.bar .lb.l{left:0}.bar .lb.r{right:0;text-align:right}
+@media (max-width:420px){
+ .bar{height:52px}
+ .bar .lb{position:static;display:block;max-width:none}
+ .bar .lb.r{text-align:left}
+ .bar .line,.bar .cap{display:none}}
+h3{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;
+ color:var(--dim);margin:24px 0 8px}
+ul{list-style:none;margin:0;padding:0;font-size:13px}
+li{padding:5px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;
+ flex-wrap:wrap}
+li:last-child{border-bottom:0}
+li .st{flex:0 0 96px;color:var(--dim);font-size:12px;padding-top:1px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+td{padding:3px 0}td.k{color:var(--dim)}
+td.v{text-align:right;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+button{font:inherit;font-size:13px;background:transparent;color:var(--ink);
+ border:1px solid var(--line);border-radius:8px;padding:7px 14px;cursor:pointer}
+button:hover{border-color:var(--ink)}
+iframe{width:100%;height:560px;border:1px solid var(--line);border-radius:8px;
+ margin-top:12px;background:#fff}
+.foot{color:var(--dim);font-size:12px;margin-top:22px;line-height:1.6}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
+ background:var(--panel);padding:2px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+<h1>Проверка пакета доказательства</h1>
+<p class="lead">Файл не покидает этот компьютер. Страница ничего не загружает и
+никуда не обращается — её можно открыть без интернета.</p>
+
+<div id="drop" tabindex="0" role="button" aria-label="Выбрать файл .seal">
+  Перетащите сюда файл <b>.seal</b><br>или нажмите, чтобы выбрать
+</div>
+<input type="file" id="file" accept=".seal,.zip">
+
+<div id="out" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<p class="foot">Формат aihash/1. Проверяются: содержимое каждой раскрытой записи,
+её звено в цепи, путь до корня отрезка, отметка отрезка, путь до суточного
+корня, суточная отметка и приложенные пломбы.<br>
+Подпись службы штампов времени и привязка к Bitcoin здесь не проверяются —
+для них нужен сертификат службы либо клиент opentimestamps; используйте
+<code>aihash-verify</code> или <code>aihash verify</code>.<br>
+Если эту страницу передала вам сторона спора — возьмите её из открытого
+проекта и сверьте отпечаток. Верификатор, полученный от оппонента, не является
+независимой проверкой.</p>
+</div></div>
+
+<script>
+/*__VERIFIER__*/
+</script>
+<script>
+(function () {
+  "use strict";
+  var a = this.aihash, out = document.getElementById("out"),
+      drop = document.getElementById("drop"), file = document.getElementById("file");
+
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+  }
+  function dt(ms) {
+    if (!ms) return "—";
+    var d = new Date(ms), p = function (n) { return (n < 10 ? "0" : "") + n; };
+    return p(d.getUTCDate()) + "." + p(d.getUTCMonth() + 1) + "." + d.getUTCFullYear()
+      + " " + p(d.getUTCHours()) + ":" + p(d.getUTCMinutes()) + " UTC";
+  }
+
+  // Три состояния, а не два. «Пломбы нет» там, где пломба стоит, — недоговорка
+  // того же сорта, что и ложное обвинение: читатель недооценит доказательство.
+  // Здесь это не редкость, а норма: подпись штампа RFC 3161 в браузере не
+  // проверяется никогда.
+  var WORD = { sealed: "Сходится и запечатано",
+               unverified: "Сходится, пломба не подтверждена здесь",
+               open: "Сходится, пломбы нет",
+               broken: "Не совпадает" };
+  var ANCHOR = { ok: "проверена", unverified: "не проверена", failed: "НЕ СХОДИТСЯ" };
+
+  // Чего не хватает и где это взять. Без второй половины сообщение бесполезно:
+  // читатель узнаёт, что проверка неполна, и не узнаёт, как её достроить.
+  var HOW = {
+    rfc3161: "Пломба rfc3161: возьмите корневой сертификат службы штампов у "
+      + "неё самой — не из этого пакета — и сверьте подпись: <code>openssl ts "
+      + "-verify -digest &lt;суточная отметка&gt; -in &lt;файл.tsr&gt; -CAfile "
+      + "&lt;cacert.pem&gt;</code>. То же делает <code>aihash-verify</code>.",
+    opentimestamps: "Пломба opentimestamps: нужен клиент — "
+      + "<code>pip install opentimestamps-client</code>."
+  };
+
+  function howToConfirm(anchors) {
+    var lines = [], seen = {};
+    (anchors || []).forEach(function (a) {
+      if (a.status !== "unverified" || !a.placed || seen[a.type]) return;
+      seen[a.type] = 1;
+      if (HOW[a.type]) lines.push(HOW[a.type]);
+    });
+    return lines;
+  }
+
+  function render(r) {
+    var h = [];
+    h.push('<div class="verdict ' + r.status + '">');
+    h.push('<span class="mark">' + esc(WORD[r.status]) + "</span>");
+
+    if (r.status === "broken") {
+      h.push("<h2>Пакет не подтверждает содержимое</h2>");
+      h.push("<p>" + r.problems.map(esc).join("<br>") + "</p>");
+      h.push("<p style=\"margin-top:10px\">Прежнее содержимое не сохранено и "
+        + "восстановлению не подлежит — хранится только отпечаток. Какое именно "
+        + "поле изменено, по отпечатку определить нельзя: он считается по записи "
+        + "целиком.</p>");
+      h.push("</div>");
+      out.innerHTML = h.join("");
+      return;
+    }
+
+    var m = r.manifest;
+    h.push("<h2>" + (r.status === "sealed"
+      ? "Записи не менялись с момента постановки пломбы"
+      : "Записи согласованы между собой, но неизменность не доказана") + "</h2>");
+    if (r.status === "unverified")
+      h.push("<p>Пломба за эти сутки поставлена — не доведена до конца её "
+        + "проверка, см. раздел «Пломбы» ниже. Это не то же самое, что "
+        + "отсутствие пломбы.</p>");
+    if (r.lower) {
+      h.push('<div class="bar"><div class="line"></div><div class="cap l"></div>'
+        + '<div class="cap r"></div><div class="lb l">не раньше ' + esc(dt(r.lower))
+        + '</div><div class="lb r">не позже пломбы</div></div>');
+      h.push("<p>Нижняя граница — публичный маяк " + esc(r.lowerSource)
+        + ": его значение нельзя было знать заранее.</p>");
+    } else {
+      // Шкалу с двумя засечками рисовать нельзя: односторонняя граница —
+      // это не интервал, и показывать её интервалом значит переоценивать.
+      h.push('<p style="margin-top:10px">Известна только верхняя граница: '
+        + "не позже постановки пломбы. Нижней нет — маяк в этот отрезок "
+        + "записан не был.</p>");
+    }
+    if (r.status === "open")
+      h.push("<p style=\"margin-top:8px\">Пломба за эти сутки не поставлена. "
+        + "Доказана только внутренняя согласованность пакета.</p>");
+    if (r.status === "unverified") {
+      // Подсказка по типу пломбы: сказать «не хватает сертификата» там, где
+      // на деле не хватает клиента opentimestamps, значит послать читателя не
+      // туда.
+      howToConfirm(r.anchors).forEach(function (line) {
+        h.push('<p style="margin-top:8px">' + line + "</p>");
+      });
+    }
+    h.push("</div>");
+
+    h.push("<h3>Что в пакете</h3><table>");
+    [["Журнал", m.realm_id], ["Поток", m.stream_id], ["Отрезок", m.period_id],
+     ["Раскрыто записей", m.disclosed_of_total[0] + " из " + m.disclosed_of_total[1]],
+     ["Суточная отметка под пломбой", r.day.day_checkpoint.slice(0, 24) + "…"]
+    ].forEach(function (row) {
+      h.push('<tr><td class="k">' + esc(row[0]) + '</td><td class="v">'
+        + esc(row[1]) + "</td></tr>");
+    });
+    h.push("</table>");
+
+    h.push("<h3>Проверено</h3><ul>");
+    r.checks.forEach(function (c) {
+      h.push('<li><span class="st">сходится</span><span>' + esc(c.label) + "</span></li>");
+    });
+    h.push("</ul>");
+
+    if (r.anchors.length) {
+      h.push("<h3>Пломбы</h3><ul>");
+      r.anchors.forEach(function (x) {
+        h.push('<li><span class="st">' + esc(ANCHOR[x.status]) + '</span><span>'
+          + esc(x.type) + " — " + esc(x.detail) + "</span></li>");
+      });
+      h.push("</ul>");
+    }
+
+    if (r.report) {
+      h.push('<h3>Выписка</h3><button id="showrep">Показать выписку</button>'
+        + '<div id="rep"></div>');
+    }
+    out.innerHTML = h.join("");
+
+    var btn = document.getElementById("showrep");
+    if (btn) btn.onclick = function () {
+      var f = document.createElement("iframe");
+      f.setAttribute("sandbox", "");
+      f.srcdoc = r.report;
+      document.getElementById("rep").appendChild(f);
+      btn.remove();
+    };
+  }
+
+  function handle(f) {
+    out.innerHTML = '<div class="verdict open"><span class="mark">Считаю отпечатки</span>'
+      + "<p>" + esc(f.name) + "</p></div>";
+    var fr = new FileReader();
+    fr.onload = function () {
+      a.verify(new Uint8Array(fr.result)).then(render).catch(function (e) {
+        render({ status: "broken", problems: [e.message || String(e)], checks: [] });
+      });
+    };
+    fr.readAsArrayBuffer(f);
+  }
+
+  // Точка входа для встраивания и для автотестов страницы.
+  this.aihashPage = {
+    verifyBytes: function (bytes) {
+      return a.verify(bytes).then(function (r) { render(r); return r; })
+        .catch(function (e) {
+          render({ status: "broken", problems: [e.message || String(e)], checks: [] });
+          throw e;
+        });
+    }
+  };
+
+  drop.onclick = function () { file.click(); };
+  drop.onkeydown = function (e) { if (e.key === "Enter" || e.key === " ") file.click(); };
+  file.onchange = function () { if (file.files[0]) handle(file.files[0]); };
+  ["dragenter", "dragover"].forEach(function (n) {
+    drop.addEventListener(n, function (e) {
+      e.preventDefault(); drop.classList.add("hot"); });
+  });
+  ["dragleave", "drop"].forEach(function (n) {
+    drop.addEventListener(n, function (e) {
+      e.preventDefault(); drop.classList.remove("hot"); });
+  });
+  drop.addEventListener("drop", function (e) {
+    if (e.dataTransfer.files[0]) handle(e.dataTransfer.files[0]);
+  });
+}).call(this);
+</script>
+</body>
+</html>

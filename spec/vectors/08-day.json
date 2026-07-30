@@ -1,0 +1,19 @@
+{
+  "vector": "08-day",
+  "format": "aihash/1",
+  "description": "Суточная отметка накрывает все потоки установки. Именно она уходит под пломбу.",
+  "realm_id": "romashka-prod",
+  "date": "2026-03-12",
+  "streams": [
+    "billing-1",
+    "voice-eu-3"
+  ],
+  "segment_checkpoints": [
+    "21e71cdb0b45e880d0c8bd6623e72ed48d931f57c3b9ff5b7ad521d68feb9a59",
+    "d54bae4b632c5819a3afc9afbcd0784e8d02d1b93fa521ae7b31fcc9d768a8cb"
+  ],
+  "day_root": "66437d880b83b8ba59753e00c05397c03af509e733d09e6f5a952915bf517fec",
+  "prev_checkpoint": "0000000000000000000000000000000000000000000000000000000000000000",
+  "day_checkpoint": "4bc7e718f05a3796770afd13b811db7fb4fdf3e9bea2d88b31a77b5c09560d92",
+  "anchored_target": "4bc7e718f05a3796770afd13b811db7fb4fdf3e9bea2d88b31a77b5c09560d92"
+}

@@ -1,0 +1,638 @@
+{
+  "vector": "03-merkle",
+  "format": "aihash/1",
+  "description": "RFC 6962. Нечётные n (3,5,6,7) проверяют поднятие последнего узла без дублирования.",
+  "cases": [
+    {
+      "n": 1,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+      ],
+      "root": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": []
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+      ],
+      "root": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+      ],
+      "root": "eafdee7d9b7624fa23d7bb14ab53a83b2907c3cd430035dfa5b968bbd37a2e5a",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a",
+        "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+      ],
+      "root": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "right",
+              "h": "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "path": [
+            {
+              "side": "left",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a",
+        "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454",
+        "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+      ],
+      "root": "e2fbd52740937d848e40d92de7f4bbb92d20aa8ad11f4805230af0465a9c93c7",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "right",
+              "h": "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "path": [
+            {
+              "side": "left",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "path": [
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a",
+        "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454",
+        "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c",
+        "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1"
+      ],
+      "root": "d2b5e993990143ab40ba41adfbd801e85ec744a944068df043ae8515c6f89bac",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "right",
+              "h": "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "path": [
+            {
+              "side": "left",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "path": [
+            {
+              "side": "right",
+              "h": "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "path": [
+            {
+              "side": "left",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a",
+        "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454",
+        "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c",
+        "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1",
+        "add4b896cb06bf0d24fd68948f1e9f7e0084b19f7b37f3fbc0f4b5d0d58ae277"
+      ],
+      "root": "0b869f1ace51175ec6c9b53be92694c146feee0f11e38ba4e0bc19f0835e2e25",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "96c3d0ec6729fdf2c81cc04aae2b85574508ff95ff794a0f12abfa703bbaf9bf"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "96c3d0ec6729fdf2c81cc04aae2b85574508ff95ff794a0f12abfa703bbaf9bf"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "right",
+              "h": "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "96c3d0ec6729fdf2c81cc04aae2b85574508ff95ff794a0f12abfa703bbaf9bf"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "path": [
+            {
+              "side": "left",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "96c3d0ec6729fdf2c81cc04aae2b85574508ff95ff794a0f12abfa703bbaf9bf"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "path": [
+            {
+              "side": "right",
+              "h": "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1"
+            },
+            {
+              "side": "right",
+              "h": "add4b896cb06bf0d24fd68948f1e9f7e0084b19f7b37f3fbc0f4b5d0d58ae277"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "path": [
+            {
+              "side": "left",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            },
+            {
+              "side": "right",
+              "h": "add4b896cb06bf0d24fd68948f1e9f7e0084b19f7b37f3fbc0f4b5d0d58ae277"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "path": [
+            {
+              "side": "left",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "leaves": [
+        "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188",
+        "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855",
+        "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a",
+        "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454",
+        "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c",
+        "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1",
+        "add4b896cb06bf0d24fd68948f1e9f7e0084b19f7b37f3fbc0f4b5d0d58ae277",
+        "3c9bcfc57bee1ac26ef0036b1fe72d119a78f09c42bff115d79fc8c212538581"
+      ],
+      "root": "9027d72dd36d4473cf9dc0ef59ef19515700a50398d28a5e63b67086ac25a7c7",
+      "audit_paths": [
+        {
+          "index": 0,
+          "path": [
+            {
+              "side": "right",
+              "h": "4140bf0e8569ed03ec838871ff2f190e9b3ea86bc083d7e9901049f75f00e855"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "1afab3e0431cb6c7c7241420bf8db4856bf5faea17350af4286f573032debf66"
+            }
+          ]
+        },
+        {
+          "index": 1,
+          "path": [
+            {
+              "side": "left",
+              "h": "d2dbf006f96dd05044a8f63d8f118f23925ba4cc5750f8b6c8e287fd506c8188"
+            },
+            {
+              "side": "right",
+              "h": "988872c79c03cef60b9c1766c0b66f3c2566154454e0f7ea176ce98e7c37a3b7"
+            },
+            {
+              "side": "right",
+              "h": "1afab3e0431cb6c7c7241420bf8db4856bf5faea17350af4286f573032debf66"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "path": [
+            {
+              "side": "right",
+              "h": "9fde56c376760bd399b82eb8569229a2dff19219411ac71154dfeab2cf502454"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "1afab3e0431cb6c7c7241420bf8db4856bf5faea17350af4286f573032debf66"
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "path": [
+            {
+              "side": "left",
+              "h": "649837ddcb7e1967086d7d35aaef7b975c513815d96fc6e70015e93a2bfe0f9a"
+            },
+            {
+              "side": "left",
+              "h": "19b92eb7e3d953eaf3bfb92c9a9555bcd40685c9452e4e451b9c7a454b284b04"
+            },
+            {
+              "side": "right",
+              "h": "1afab3e0431cb6c7c7241420bf8db4856bf5faea17350af4286f573032debf66"
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "path": [
+            {
+              "side": "right",
+              "h": "fb1ec199d052a3ce6d141a28c2d706a51b99f09c2a8d61243062a046f06b68f1"
+            },
+            {
+              "side": "right",
+              "h": "144030dc373ced166b27df2be9e459ef70253a9fb148e615993feb4ad29255c6"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "path": [
+            {
+              "side": "left",
+              "h": "697f943b9ec5f90eddda8ae7473f5eb688187e3467f312fefa8677dde255042c"
+            },
+            {
+              "side": "right",
+              "h": "144030dc373ced166b27df2be9e459ef70253a9fb148e615993feb4ad29255c6"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "path": [
+            {
+              "side": "right",
+              "h": "3c9bcfc57bee1ac26ef0036b1fe72d119a78f09c42bff115d79fc8c212538581"
+            },
+            {
+              "side": "left",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "path": [
+            {
+              "side": "left",
+              "h": "add4b896cb06bf0d24fd68948f1e9f7e0084b19f7b37f3fbc0f4b5d0d58ae277"
+            },
+            {
+              "side": "left",
+              "h": "c35f20a2182e1c4b0c287b08a654afe8aa222113543778cf4694fcc471dd47c8"
+            },
+            {
+              "side": "left",
+              "h": "c3e8d0be9668f306c37f47507c8de85e7b5790f77c325a0c2482160617c55ebb"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

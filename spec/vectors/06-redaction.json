@@ -1,0 +1,38 @@
+{
+  "vector": "06-redaction",
+  "format": "aihash/1",
+  "description": "Ключевое свойство: удаление значения и соли не меняет отпечаток записи и не рвёт цепь.",
+  "stream_id": "voice-eu-3",
+  "seq": 2,
+  "content_root_before": "4b3cc96c60a86599c0bc340fc39dcf91b7584839cb26840fc82644914c71b690",
+  "content_root_after": "4b3cc96c60a86599c0bc340fc39dcf91b7584839cb26840fc82644914c71b690",
+  "fields_after": [
+    {
+      "name": "actor",
+      "salt": "af6c1445530f16951d4ea4639e8d258c",
+      "s": "customer"
+    },
+    {
+      "name": "customer.name",
+      "leaf": "c5e30bbafb9a4111b469a94dcd667398e626942e266a33711a9068e1de9f467a",
+      "redacted": {
+        "at": 1780564320000,
+        "seq": 6
+      }
+    },
+    {
+      "name": "customer.phone",
+      "leaf": "ecff3498db06e218f25adc722cb404d7d9f6423d5f3569e0042efb1655244b7f",
+      "redacted": {
+        "at": 1780564320000,
+        "seq": 6
+      }
+    },
+    {
+      "name": "input.text",
+      "salt": "a40920abc0ea2c28b3fe76eb01fba04e",
+      "s": "Когда придёт возврат за отменённый заказ?"
+    }
+  ],
+  "redaction_record_seq": 6
+}
