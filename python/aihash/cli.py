@@ -205,21 +205,21 @@ def _verify_journal(path: str, cfg: dict, as_json: bool) -> int:
         print(json.dumps(r.to_dict(), ensure_ascii=False, indent=2))
         return 0 if r.ok else 1
     if not r.ok:
-        print("НЕ СХОДИТСЯ\n")
+        print("DOES NOT MATCH\n")
         for p in r.problems:
             print("  " + p)
         return 1
-    print("Журнал %s: записей %d, потоков %d"
+    print("Journal %s: %d record(s), %d stream(s)"
           % (r.realm["realm_id"], r.records, len(r.streams)))
     for s in r.streams:
-        red = ", вычеркнуто полей %d" % s["redacted"] if s["redacted"] else ""
-        print("  поток %s: записей %d%s" % (s["stream_id"], s["records"], red))
+        red = ", %d fields redacted" % s["redacted"] if s["redacted"] else ""
+        print("  stream %s: %d record(s)%s" % (s["stream_id"], s["records"], red))
     sealed = [d for d in r.days if d["status"] == verify.SEALED]
     unconfirmed = [d for d in r.days if d["status"] == verify.UNVERIFIED]
     openn = [d for d in r.days if d["status"] == verify.OPEN]
-    print("Цепь сходится на всём протяжении.")
+    print("The chain matches end to end.")
     if sealed:
-        print("Запечатано суток: %d (%s)"
+        print("Days sealed: %d (%s)"
               % (len(sealed), ", ".join(d["date"] for d in sealed)))
         for d in sealed:
             for a in d["anchors"]:
@@ -227,7 +227,7 @@ def _verify_journal(path: str, cfg: dict, as_json: bool) -> int:
     if unconfirmed:
         _print_unconfirmed(unconfirmed)
     if openn:
-        print("Не запечатано суток: %d (%s) — пломба ставится раз в сутки"
+        print("Days not sealed: %d (%s) — a seal is placed once a day"
               % (len(openn), ", ".join(d["date"] for d in openn)))
     return 0
 
@@ -236,10 +236,10 @@ def _verify_journal(path: str, cfg: dict, as_json: bool) -> int:
 # сообщение бесполезно: получатель узнаёт, что проверка неполна, и не узнаёт,
 # как её достроить.
 _HOW_TO_CONFIRM = {
-    "rfc3161": "возьмите корневой сертификат службы штампов у неё самой "
-               "(не из этого пакета) и повторите: aihash verify <журнал> "
-               "--tsa-ca <cacert.pem>",
-    "opentimestamps": "поставьте клиент и повторите: "
+    "rfc3161": "obtain the timestamp authority root certificate from the "
+               "authority itself (not from this bundle) and retry: "
+               "aihash verify <journal> --tsa-ca <cacert.pem>",
+    "opentimestamps": "install the client and retry: "
                       "pip install opentimestamps-client",
 }
 
@@ -251,7 +251,7 @@ def _print_unconfirmed(days: list) -> None:
     «пломбы нет» значит недооценить доказательство за владельца журнала —
     ошибка того же рода, что и ложное обвинение, только в другую сторону.
     """
-    print("Пломба стоит, но здесь не подтверждена: суток %d (%s)"
+    print("Seal present but not confirmed here: %d day(s) (%s)"
           % (len(days), ", ".join(d["date"] for d in days)))
     kinds = []
     for d in days:
@@ -265,8 +265,8 @@ def _print_unconfirmed(days: list) -> None:
     # отметке, доказано только для rfc3161 — там это видно по сырым байтам, и
     # так и написано в его строке выше. Для остальных типов проверка не
     # доведена до конца, и объявлять их относящимися к отметке — переоценивание.
-    print("  Это не «пломбы нет»: пломба за эти сутки поставлена, "
-          "не доведена до конца её проверка.")
+    print("  This is not \"no seal\": a seal was placed for these days, "
+          "verifying it was not finished.")
     for kind in kinds:
         how = _HOW_TO_CONFIRM.get(kind)
         if how:
@@ -290,46 +290,47 @@ def _verify_bundle(path: str, cfg: dict, as_json: bool) -> int:
         return _bundle_rc(r["status"])
 
     if r["status"] == verify.BROKEN:
-        print("НЕ СХОДИТСЯ\n")
+        print("DOES NOT MATCH\n")
         for p in r["problems"]:
             print("  " + p)
-        print("\nПрежнее содержимое не сохранено и восстановлению не подлежит —")
-        print("хранится только отпечаток. Определить, какое именно поле изменено,")
-        print("по отпечатку невозможно: он считается по записи целиком.")
+        print("\nThe previous content is not stored and cannot be recovered —")
+        print("only the fingerprint is kept. Which field was changed cannot be")
+        print("told from the fingerprint: it covers the record as a whole.")
         return 1
 
     m = r["manifest"]
     b = r.get("bounds", {})
-    print("Пакет %s" % os.path.basename(path))
-    print("  журнал %s, поток %s, отрезок %s"
+    print("Bundle %s" % os.path.basename(path))
+    print("  journal %s, stream %s, segment %s"
           % (m["realm_id"], m["stream_id"], m["period_id"]))
-    print("  раскрыто записей %d из %d в отрезке" % tuple(m["disclosed_of_total"]))
+    print("  %d of %d records in the segment disclosed"
+          % tuple(m["disclosed_of_total"]))
     print()
     for c in r["checks"]:
-        print("  сходится: %s" % c["label"])
+        print("  matches: %s" % c["label"])
     print()
     for a in r.get("anchors", []):
-        mark = {"ok": "проверена", "unverified": "не проверена",
-                "failed": "НЕ СХОДИТСЯ"}[a["status"]]
-        print("  пломба %s: %s — %s" % (a["type"], mark, a.get("detail", "")))
+        mark = {"ok": "verified", "unverified": "not verified",
+                "failed": "DOES NOT MATCH"}[a["status"]]
+        print("  seal %s: %s — %s" % (a["type"], mark, a.get("detail", "")))
     print()
     if r["status"] == verify.SEALED:
-        print("Вывод: содержимое совпадает с отпечатком, отпечаток входит в")
-        print("суточное дерево, суточная отметка запечатана.")
+        print("Verdict: the content matches its fingerprint, the fingerprint is")
+        print("in the daily tree, and the daily checkpoint is sealed.")
     elif r["status"] == verify.UNVERIFIED:
-        print("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево.")
-        print("Пломба за эти сутки поставлена, но здесь не подтверждена — см. её")
-        print("строку выше. Неизменность не доказана, пока проверка пломбы не")
-        print("доведена до конца; отсутствием пломбы это не является.")
+        print("Verdict: the content matches its fingerprint and is in the daily tree.")
+        print("A seal was placed for these days but is not confirmed here — see")
+        print("its line above. Integrity is not proven until verifying the seal")
+        print("is finished; this is not the same as having no seal.")
     else:
-        print("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево,")
-        print("но пломба за эти сутки не поставлена. Неизменность")
-        print("не доказана — доказана только внутренняя согласованность.")
+        print("Verdict: the content matches its fingerprint and is in the daily tree,")
+        print("but no seal was placed for these days. Integrity is not proven —")
+        print("only internal consistency is.")
     lo = _full(b.get("lower_ms")) if b.get("lower_ms") else None
     if lo:
-        print("Запись существовала не ранее %s (%s)" % (lo, b["lower_source"]))
+        print("The record existed no earlier than %s (%s)" % (lo, b["lower_source"]))
     if b.get("upper"):
-        print("и не позднее %s (%s)." % (b["upper"], b["upper_source"]))
+        print("and no later than %s (%s)." % (b["upper"], b["upper_source"]))
     return _bundle_rc(r["status"])
 
 

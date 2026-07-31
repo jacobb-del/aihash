@@ -239,18 +239,18 @@ export function verifyFeed(text: string, target: Buffer,
       e = JSON.parse(lines[i]!) as FeedEntry;
     } catch {
       return { type: "feed", status: ANCHOR_FAILED,
-               detail: `запись ленты ${i + 1} не разбирается` };
+               detail: `feed entry ${i + 1} does not parse` };
     }
     if (e.prev !== prev.toString("hex")) {
       return { type: "feed", status: ANCHOR_FAILED,
-               detail: `лента порвана на записи ${i + 1}` };
+               detail: `the feed is broken at entry ${i + 1}` };
     }
     const want = core.H(Buffer.from("aihash/feed/1", "utf8"),
                         core.lp(Buffer.from(e.date, "utf8")),
                         Buffer.from(e.target, "hex"), prev);
     if (want.toString("hex") !== e.entry) {
       return { type: "feed", status: ANCHOR_FAILED,
-               detail: `отпечаток записи ленты ${i + 1} не сходится` };
+               detail: `fingerprint of feed entry ${i + 1} does not match` };
     }
     prev = want;
     if (date === undefined || e.date === date) sameDate.push(e);
@@ -260,25 +260,25 @@ export function verifyFeed(text: string, target: Buffer,
   const distinct = new Set(sameDate.map((e) => e.target));
   if (distinct.size > 1) {
     return { type: "feed", status: ANCHOR_FAILED,
-             detail: `за эти сутки в ленте опубликовано ${distinct.size} разных ` +
-                     "отметок — раздвоение журнала" };
+             detail: `${distinct.size} different checkpoints published in the ` +
+                     "feed for these days — the journal was forked" };
   }
   if (found) {
     return { type: "feed", status: ANCHOR_OK, placed: true,
-             detail: `запись ${found.seq} в ленте; сила пломбы зависит от того, ` +
-                     "опубликована ли лента вовне" };
+             detail: `entry ${found.seq} in the feed; the strength of this seal ` +
+                     "depends on whether the feed is published outside" };
   }
   if (sameDate.length) {
     return { type: "feed", status: ANCHOR_FAILED,
-             detail: `за эти сутки в ленте опубликована ДРУГАЯ отметка ` +
-                     `(${sameDate[0]!.target.slice(0, 16)}…) — журнал не ` +
-                     "совпадает с опубликованным" };
+             detail: `a DIFFERENT checkpoint is published in the feed for these ` +
+                     `days (${sameDate[0]!.target.slice(0, 16)}…) — the ` +
+                     "journal does not match it" };
   }
   // Лента цела, но этих суток в ней нет: пломба не была поставлена. Это
   // «пломбы нет», а не «пломба не подтверждена», поэтому placed остаётся false.
   return { type: "feed", status: ANCHOR_UNVERIFIED, placed: false,
-           detail: "лента цела, но этих суток в ней нет — пломба лентой " +
-                   "не поставлена" };
+           detail: "the feed is intact but does not contain these days — the " +
+                   "feed placed no seal" };
 }
 
 /**
@@ -301,24 +301,25 @@ function anchorBlob(name: string, data: Buffer, target: Buffer,
   if (base.endsWith(".rfc3161.tsr")) {
     if (!data.includes(target)) {
       return { type: "rfc3161", status: ANCHOR_FAILED,
-               detail: "штамп поставлен не на эту суточную отметку" };
+               detail: "the timestamp was not placed on this daily checkpoint" };
     }
     // Принадлежность штампа отметке доказана сырыми байтами выше: пломба за
     // эти сутки поставлена, вопрос только в подписи.
     return { type: "rfc3161", status: ANCHOR_UNVERIFIED, placed: true,
-             detail: "штамп относится к этой отметке, но подпись службы не " +
-                     "проверена — нужен её сертификат: openssl ts -verify" };
+             detail: "the timestamp covers this checkpoint, but the authority " +
+                     "signature was not verified — its certificate is needed: " +
+                     "openssl ts -verify" };
   }
   if (base.endsWith(".opentimestamps.ots")) {
     // Разобрать .ots здесь нечем: что это пломба над нашей отметкой — не
     // установлено, поэтому и постановка пломбы не засчитывается.
     return { type: "opentimestamps", status: ANCHOR_UNVERIFIED,
-             detail: "требуется клиент opentimestamps" };
+             detail: "the opentimestamps client is required" };
   }
   // Файл в anchors/ есть, а что это — неизвестно. Ни принадлежность отметке,
   // ни сам факт постановки пломбы отсюда не следуют.
   return { type: base, status: ANCHOR_UNVERIFIED,
-           detail: "неизвестный тип пломбы — пропущена, но не засчитана" };
+           detail: "unknown seal type — skipped, and not counted" };
 }
 
 export async function anchorDay(layout: store.Layout, date: string,

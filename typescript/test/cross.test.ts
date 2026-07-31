@@ -84,15 +84,15 @@ test("TypeScript пишет — бинарь на Go принимает журн
   const { root } = await tsJournal();
   const { rc, out } = run(GO, [root]);
   assert.equal(rc, 0, out);
-  assert.match(out, /Цепь сходится на всём протяжении/);
-  assert.match(out, /Запечатано суток: 1/);
+  assert.match(out, /The chain matches end to end/);
+  assert.match(out, /Days sealed: 1/);
 });
 
 test("TypeScript пишет — Python принимает журнал", { skip: !hasPy }, async () => {
   const { root } = await tsJournal();
   const { rc, out } = run(PY, ["-m", "aihash.cli", "verify", root]);
   assert.equal(rc, 0, out);
-  assert.match(out, /Цепь сходится на всём протяжении/);
+  assert.match(out, /The chain matches end to end/);
 });
 
 test("пакет из TypeScript принимают Go, Python и браузерное ядро", async () => {
@@ -106,7 +106,7 @@ test("пакет из TypeScript принимают Go, Python и браузер
   if (hasGo) {
     const r = run(GO, [out]);
     assert.equal(r.rc, 0, r.out);
-    assert.match(r.out, /суточная отметка запечатана/);
+    assert.match(r.out, /daily checkpoint is sealed/);
   }
   if (hasPy) {
     const r = run(PY, ["-m", "aihash.cli", "verify", out]);

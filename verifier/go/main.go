@@ -92,19 +92,19 @@ func full(ms uint64) string {
 }
 
 var anchorWord = map[string]string{
-	AnchorOK: "проверена", AnchorUnverified: "не проверена", AnchorFailed: "НЕ СХОДИТСЯ",
+	AnchorOK: "verified", AnchorUnverified: "not verified", AnchorFailed: "DOES NOT MATCH",
 }
 
 func printBroken(r *Result) {
-	fmt.Println("НЕ СХОДИТСЯ")
+	fmt.Println("DOES NOT MATCH")
 	fmt.Println()
 	for _, p := range r.Problems {
 		fmt.Println("  " + p)
 	}
 	fmt.Println()
-	fmt.Println("Прежнее содержимое не сохранено и восстановлению не подлежит —")
-	fmt.Println("хранится только отпечаток. Определить, какое именно поле изменено,")
-	fmt.Println("по отпечатку невозможно: он считается по записи целиком.")
+	fmt.Println("The previous content is not stored and cannot be recovered —")
+	fmt.Println("only the fingerprint is kept. Which field was changed cannot be")
+	fmt.Println("told from the fingerprint: it covers the record as a whole.")
 }
 
 func printBundle(r *Result) {
@@ -112,37 +112,37 @@ func printBundle(r *Result) {
 		printBroken(r)
 		return
 	}
-	fmt.Printf("Пакет %s\n", filepath.Base(r.Path))
-	fmt.Printf("  журнал %s, поток %s, отрезок %s\n", r.RealmID, r.StreamID, r.PeriodID)
+	fmt.Printf("Bundle %s\n", filepath.Base(r.Path))
+	fmt.Printf("  journal %s, stream %s, segment %s\n", r.RealmID, r.StreamID, r.PeriodID)
 	if len(r.Disclosed) == 2 {
-		fmt.Printf("  раскрыто записей %d из %d в отрезке\n", r.Disclosed[0], r.Disclosed[1])
+		fmt.Printf("  %d of %d records in the segment disclosed\n", r.Disclosed[0], r.Disclosed[1])
 	}
 	fmt.Println()
 	for _, c := range r.Checks {
-		fmt.Println("  сходится: " + c.Label)
+		fmt.Println("  matches: " + c.Label)
 	}
 	fmt.Println()
 	for _, a := range r.Anchors {
-		fmt.Printf("  пломба %s: %s — %s\n", a.Type, anchorWord[a.Status], a.Detail)
+		fmt.Printf("  seal %s: %s — %s\n", a.Type, anchorWord[a.Status], a.Detail)
 	}
 	fmt.Println()
 	switch r.Status {
 	case StatusSealed:
-		fmt.Println("Вывод: содержимое совпадает с отпечатком, отпечаток входит в")
-		fmt.Println("суточное дерево, суточная отметка запечатана.")
+		fmt.Println("Verdict: the content matches its fingerprint, the fingerprint is")
+		fmt.Println("in the daily tree, and the daily checkpoint is sealed.")
 	case StatusUnverified:
-		fmt.Println("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево.")
-		fmt.Println("Пломба за эти сутки поставлена, но здесь не подтверждена — см. её")
-		fmt.Println("строку выше. Неизменность не доказана, пока проверка пломбы не")
-		fmt.Println("доведена до конца; отсутствием пломбы это не является.")
+		fmt.Println("Verdict: the content matches its fingerprint and is in the daily tree.")
+		fmt.Println("A seal was placed for these days but is not confirmed here — see")
+		fmt.Println("its line above. Integrity is not proven until verifying the seal")
+		fmt.Println("is finished; this is not the same as having no seal.")
 	default:
-		fmt.Println("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево,")
-		fmt.Println("но пломба за эти сутки не поставлена. Неизменность")
-		fmt.Println("не доказана — доказана только внутренняя согласованность.")
+		fmt.Println("Verdict: the content matches its fingerprint and is in the daily tree,")
+		fmt.Println("but no seal was placed for these days. Integrity is not proven —")
+		fmt.Println("only internal consistency is.")
 	}
 	if r.LowerMS != 0 {
-		fmt.Printf("Запись существовала не ранее %s (%s)\n", full(r.LowerMS), r.LowerSource)
-		fmt.Println("и не позднее постановки пломбы.")
+		fmt.Printf("The record existed no earlier than %s (%s)\n", full(r.LowerMS), r.LowerSource)
+		fmt.Println("and no later than the seal.")
 	}
 }
 
@@ -151,20 +151,20 @@ func printJournal(r *Result) {
 		printBroken(r)
 		return
 	}
-	fmt.Printf("Журнал %s: записей %d\n", r.RealmID, r.Records)
+	fmt.Printf("Journal %s: %d record(s)\n", r.RealmID, r.Records)
 	if r.Redacted > 0 {
-		fmt.Printf("  вычеркнуто полей: %d\n", r.Redacted)
+		fmt.Printf("  fields redacted: %d\n", r.Redacted)
 	}
-	fmt.Println("Цепь сходится на всём протяжении.")
+	fmt.Println("The chain matches end to end.")
 	if len(r.SealedDays) > 0 {
-		fmt.Printf("Запечатано суток: %d (%s)\n", len(r.SealedDays), strings.Join(r.SealedDays, ", "))
+		fmt.Printf("Days sealed: %d (%s)\n", len(r.SealedDays), strings.Join(r.SealedDays, ", "))
 		printAnchorsOf(r, r.SealedDays)
 	}
 	if len(r.UnverifiedDays) > 0 {
 		printUnconfirmed(r)
 	}
 	if len(r.OpenDays) > 0 {
-		fmt.Printf("Не запечатано суток: %d (%s) — пломба ставится раз в сутки\n",
+		fmt.Printf("Days not sealed: %d (%s) — a seal is placed once a day\n",
 			len(r.OpenDays), strings.Join(r.OpenDays, ", "))
 	}
 }
@@ -186,11 +186,11 @@ func printAnchorsOf(r *Result, dates []string) {
 // — разбора CMS в этом бинаре нет и не будет, — и объявлять из-за этого журнал
 // незапечатанным значит занижать доказательство за его владельца.
 func printUnconfirmed(r *Result) {
-	fmt.Printf("Пломба стоит, но здесь не подтверждена: суток %d (%s)\n",
+	fmt.Printf("Seal present but not confirmed here: %d day(s) (%s)\n",
 		len(r.UnverifiedDays), strings.Join(r.UnverifiedDays, ", "))
 	printAnchorsOf(r, r.UnverifiedDays)
-	fmt.Println("  Это не «пломбы нет»: пломба за эти сутки поставлена, " +
-		"не доведена до конца её проверка.")
+	fmt.Println("  This is not \"no seal\": a seal was placed for these days, " +
+		"verifying it was not finished.")
 	seen := map[string]bool{}
 	unverified := map[string]bool{}
 	for _, d := range r.UnverifiedDays {
@@ -210,9 +210,9 @@ func printUnconfirmed(r *Result) {
 // Чего не хватает и где это взять. Без второй половины сообщение бесполезно:
 // получатель узнаёт, что проверка неполна, и не узнаёт, как её достроить.
 var howToConfirm = map[string]string{
-	"rfc3161": "возьмите корневой сертификат службы штампов у неё самой " +
-		"(не из этого пакета) и сверьте подпись: " +
-		"openssl ts -verify -digest <суточная отметка> -in <файл.tsr> -CAfile <cacert.pem>",
-	"opentimestamps": "поставьте клиент и повторите: " +
+	"rfc3161": "obtain the timestamp authority root certificate from the " +
+		"authority itself (not from this bundle) and check the signature: " +
+		"openssl ts -verify -digest <daily checkpoint> -in <file.tsr> -CAfile <cacert.pem>",
+	"opentimestamps": "install the client and retry: " +
 		"pip install opentimestamps-client",
 }

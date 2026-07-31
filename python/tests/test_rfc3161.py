@@ -33,7 +33,7 @@ def test_real_stamp_belongs_to_its_target():
 def test_wrong_target_is_rejected():
     r = anchors.verify_file(TSR, b"\x00" * 32, {})
     assert r["status"] == anchors.FAILED
-    assert "не на эту" in r["detail"]
+    assert "not placed on this" in r["detail"]
 
 
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="нужен openssl")
@@ -42,7 +42,7 @@ def test_embedded_root_store_verifies_without_any_configuration():
     r = anchors.verify_file(TSR, TARGET, {})
     assert r["status"] == anchors.OK, r["detail"]
     assert r["root"]["id"] == "freetsa"
-    assert "набор корней версии" in r["detail"]
+    assert "root store version" in r["detail"]
 
 
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="нужен openssl")
@@ -53,8 +53,8 @@ def test_authority_outside_the_store_is_not_claimed_verified(tmp_path):
                             {"trust_store": _store_without_freetsa(tmp_path)})
     assert r["status"] == anchors.UNVERIFIED
     assert r["placed"], "пломба стоит — это не «пломбы нет»"
-    assert "нет в наборе корней" in r["detail"]
-    assert "отпечаток" in r["detail"] and "--tsa-ca" in r["detail"]
+    assert "not in the root store" in r["detail"]
+    assert "fingerprint" in r["detail"] and "--tsa-ca" in r["detail"]
 
 
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="нужен openssl")
@@ -63,7 +63,7 @@ def test_signature_verifies_with_an_explicitly_given_certificate():
     быть можно проверить, не дожидаясь нашего выпуска."""
     r = anchors.verify_file(TSR, TARGET, {"tsa_ca": CA})
     assert r["status"] == anchors.OK, r["detail"]
-    assert "переопределение --tsa-ca" in r["detail"]
+    assert "--tsa-ca override" in r["detail"]
 
 
 @pytest.mark.skipif(shutil.which("openssl") is None, reason="нужен openssl")

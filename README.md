@@ -14,17 +14,17 @@ aihash verify ./demo/journal
 ```
 
 ```
-Цепь сходится на всём протяжении.
-Запечатано суток: 1 (2026-07-29)
-  2026-07-29: rfc3161 — подпись службы штампов проверена (набор корней версии 1, корень freetsa)
+The chain matches end to end.
+Days sealed: 1 (2026-07-29)
+  2026-07-29: rfc3161 — timestamp authority signature verified (root store version 1, root freetsa)
 ```
 
 Теперь **поменяйте один символ**: в `demo/journal/streams/voice-eu-3/segments/2026-07-29.jsonl` найдите `возврат придёт в течение 3 дней` и исправьте `3` на `5`. Та же команда:
 
 ```
-НЕ СХОДИТСЯ
+DOES NOT MATCH
 
-  поток voice-eu-3 seq=3: звено не совпадает с записанным
+  stream voice-eu-3 seq=3: the link does not match the recorded one
 ```
 
 Код возврата `1`. Подробности, проверка через браузер и через `openssl` без нашего кода вообще — в [demo/](https://github.com/jacobb-del/aihash/blob/main/demo/README.md).
@@ -58,12 +58,12 @@ aihash-verify ep.seal
 ```
 
 ```
-Вывод: содержимое совпадает с отпечатком и входит в суточное дерево.
-Пломба за эти сутки поставлена, но здесь не подтверждена — см. её
-строку выше. Неизменность не доказана, пока проверка пломбы не
-доведена до конца; отсутствием пломбы это не является.
-Запись существовала не ранее 29.07.2026 08:45 UTC (drand:quicknet раунд 30837112)
-и не позднее постановки пломбы.
+Verdict: the content matches its fingerprint and is in the daily tree.
+A seal was placed for these days but is not confirmed here — see
+its line above. Integrity is not proven until verifying the seal
+is finished; this is not the same as having no seal.
+The record existed no earlier than 29.07.2026 08:45 UTC (drand:quicknet round 30837112)
+and no later than the seal.
 ```
 
 Бинарь проверил всё, кроме подписи службы штампов: разбора CMS в нём пока нет. Подпись сверяет команда SDK — **без единого аргумента**, потому что корни известных служб вшиты в сам верификатор:
@@ -73,13 +73,13 @@ aihash verify ep.seal
 ```
 
 ```
-  пломба rfc3161: проверена — подпись службы штампов проверена
-                  (набор корней версии 1, корень freetsa)
+  seal rfc3161: verified — timestamp authority signature verified
+                (root store version 1, root freetsa)
 
-Вывод: содержимое совпадает с отпечатком, отпечаток входит в
-суточное дерево, суточная отметка запечатана.
-Запись существовала не ранее 29.07.2026 08:45 UTC (drand:quicknet раунд 30837112)
-и не позднее Jul 29 08:45:31 2026 GMT (rfc3161).
+Verdict: the content matches its fingerprint, the fingerprint is
+in the daily tree, and the daily checkpoint is sealed.
+The record existed no earlier than 29.07.2026 08:45 UTC (drand:quicknet round 30837112)
+and no later than Jul 29 08:45:31 2026 GMT (rfc3161).
 ```
 
 **Корень доверия едет с верификатором, а не с пакетом** — как у браузеров. Сертификат, приложенный к пакету, и корень, вложенный в сам штамп, доверия не создают никогда: иначе подделыватель приложил бы к поддельному штампу свой корень и заверил бы сам себя. Они годятся ровно на одно — подсказать, какой корень искать.

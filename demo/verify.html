@@ -431,16 +431,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
       try { e = JSON.parse(lines[i]); }
       catch (err) {
         return { type: "feed", status: "failed",
-                 detail: "запись ленты " + (i + 1) + " не разбирается" };
+                 detail: "feed entry " + (i + 1) + " does not parse" };
       }
       if (e.prev !== hex(prev)) {
         return { type: "feed", status: "failed",
-                 detail: "лента порвана на записи " + (i + 1) };
+                 detail: "the feed is broken at entry " + (i + 1) };
       }
       var want = H(utf8("aihash/feed/1"), lp(utf8(e.date)), unhex(e.target), prev);
       if (hex(want) !== e.entry) {
         return { type: "feed", status: "failed",
-                 detail: "отпечаток записи ленты " + (i + 1) + " не сходится" };
+                 detail: "fingerprint of feed entry " + (i + 1) + " does not match" };
       }
       prev = want;
       if (date === undefined || e.date === date) sameDate.push(e);
@@ -453,24 +453,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
     }
     if (n > 1) {
       return { type: "feed", status: "failed",
-               detail: "за эти сутки в ленте опубликовано " + n
-                       + " разных отметок — раздвоение журнала" };
+               detail: n + " different checkpoints published in the feed for these "
+                       + "days — the journal was forked" };
     }
     if (found) {
       return { type: "feed", status: "ok", placed: true,
-               detail: "запись " + found.seq + " в ленте; сила пломбы зависит "
-                       + "от того, опубликована ли лента вовне" };
+               detail: "entry " + found.seq + " in the feed; the strength of this "
+                       + "seal depends on whether the feed is published outside" };
     }
     if (sameDate.length) {
       return { type: "feed", status: "failed",
-               detail: "за эти сутки в ленте опубликована ДРУГАЯ отметка ("
-                       + sameDate[0].target.slice(0, 16)
-                       + "…) — журнал не совпадает с опубликованным" };
+               detail: "a DIFFERENT checkpoint is published in the feed for these "
+                       + "days (" + sameDate[0].target.slice(0, 16)
+                       + "…) — the journal does not match it" };
     }
     // Это «пломбы нет», а не «пломба не подтверждена»: placed остаётся false.
     return { type: "feed", status: "unverified", placed: false,
-             detail: "лента цела, но этих суток в ней нет — пломба лентой "
-                     + "не поставлена" };
+             detail: "the feed is intact but does not contain these days — the "
+                     + "feed placed no seal" };
   }
 
   function contains(hay, needle) {
@@ -513,17 +513,17 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
       // поставлена: непроверенной остаётся только подпись службы.
       return contains(data, target)
         ? { type: "rfc3161", status: "unverified", placed: true,
-            detail: "штамп относится к этой отметке; подпись службы "
-                    + "проверяется командой aihash-verify" }
+            detail: "the timestamp covers this checkpoint; the authority "
+                    + "signature is checked by aihash-verify" }
         : { type: "rfc3161", status: "failed",
-            detail: "штамп поставлен не на эту суточную отметку" };
+            detail: "the timestamp was not placed on this daily checkpoint" };
     }
     if (/\.opentimestamps\.ots$/.test(base)) {
       return { type: "opentimestamps", status: "unverified",
-               detail: "требуется клиент opentimestamps" };
+               detail: "the opentimestamps client is required" };
     }
     return { type: base, status: "unverified",
-             detail: "неизвестный тип пломбы — не засчитана" };
+             detail: "unknown seal type — not counted" };
   }
 
   function verifyAnchors(files, target, date) {
@@ -559,7 +559,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
     return loadBundle(bytes).then(function (files) {
       var out = { status: "broken", checks: [], problems: [], anchors: [] };
       function need(name) {
-        if (!files[name]) throw new Error("в пакете нет " + name);
+        if (!files[name]) throw new Error("the bundle has no " + name);
         return JSON.parse(fromUtf8(files[name]));
       }
       function ok(label, cond, detail) {
@@ -590,38 +590,38 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;
         return out;
       }
 
-      if (!ok("версия формата", manifest.format === "aihash/1", manifest.format))
+      if (!ok("format version", manifest.format === "aihash/1", manifest.format))
         return out;
 
       for (var i = 0; i < records.length; i++) {
         var rec = records[i], p = proofs.records[String(rec.seq)];
-        if (!p) { ok("запись seq=" + rec.seq + ": путь в пакете", false); return out; }
+        if (!p) { ok("record seq=" + rec.seq + ": путь в пакете", false); return out; }
         var croot;
         try { croot = contentRoot(rec.fields); }
-        catch (e) { ok("запись seq=" + rec.seq + ": поля", false, e.message); return out; }
+        catch (e) { ok("record seq=" + rec.seq + ": поля", false, e.message); return out; }
         var l = link(unhex(p.prev_link), rec.seq, croot, rec.ts);
-        if (!ok("запись seq=" + rec.seq + ": содержимое и звено", hex(l) === p.link))
+        if (!ok("record seq=" + rec.seq + ": content and link", hex(l) === p.link))
           return out;
         var got = applyPath(segLeaf(l), p.segment_path);
-        if (!ok("запись seq=" + rec.seq + ": путь до корня отрезка",
+        if (!ok("record seq=" + rec.seq + ": path to the segment root",
                 hex(got) === segment.segment_root)) return out;
       }
 
       var ck;
       try { ck = segCkpt(segment); }
-      catch (e) { ok("отметка отрезка", false, e.message); return out; }
-      if (!ok("отметка отрезка", hex(ck) === segment.checkpoint)) return out;
+      catch (e) { ok("segment checkpoint", false, e.message); return out; }
+      if (!ok("segment checkpoint", hex(ck) === segment.checkpoint)) return out;
 
       var droot = applyPath(dayLeaf(ck), proofs.day_path);
-      if (!ok("путь до суточного корня", hex(droot) === day.day_root)) return out;
+      if (!ok("path to the daily root", hex(droot) === day.day_root)) return out;
 
       var dck = dayCkpt(day);
-      if (!ok("суточная отметка", hex(dck) === day.day_checkpoint)) return out;
+      if (!ok("daily checkpoint", hex(dck) === day.day_checkpoint)) return out;
 
       out.anchors = verifyAnchors(files, dck, day.date);
       for (var j = 0; j < out.anchors.length; j++) {
         if (out.anchors[j].status === "failed")
-          ok("пломба " + out.anchors[j].type, false, out.anchors[j].detail);
+          ok("seal " + out.anchors[j].type, false, out.anchors[j].detail);
       }
       if (out.problems.length) return out;
 

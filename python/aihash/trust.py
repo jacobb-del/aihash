@@ -47,7 +47,7 @@ def pem_certs(data: bytes) -> List[bytes]:
         try:
             out.append(base64.b64decode(b"".join(body.split())))
         except (binascii.Error, ValueError):
-            raise TrustError("сертификат в PEM не разбирается")
+            raise TrustError("a certificate in the PEM does not parse")
     return out
 
 
@@ -77,7 +77,7 @@ class Store:
         return len(self.roots)
 
     def describe(self) -> str:
-        return "%s версии %d, корней %d" % (self.origin, self.version, len(self))
+        return "%s version %d, %d root(s)" % (self.origin, self.version, len(self))
 
 
 def load(path: Optional[str] = None) -> Store:
@@ -92,36 +92,36 @@ def load(path: Optional[str] = None) -> Store:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
     except OSError as e:
-        raise TrustError("набор корней не читается: %s" % e)
+        raise TrustError("the root store cannot be read: %s" % e)
     except json.JSONDecodeError as e:
-        raise TrustError("набор корней не разбирается: %s" % e)
+        raise TrustError("the root store does not parse: %s" % e)
 
     if data.get("format") != FORMAT:
-        raise TrustError("формат набора %r не поддерживается" % data.get("format"))
+        raise TrustError("root store format %r is not supported" % data.get("format"))
     version = data.get("version")
     if not isinstance(version, int) or version < 1:
-        raise TrustError("в наборе нет номера версии")
+        raise TrustError("the root store has no version number")
 
     roots = []
     for entry in data.get("roots", []):
         try:
             root = Root(entry)
         except (KeyError, TypeError, UnicodeEncodeError) as e:
-            raise TrustError("запись набора неполна: %s" % e)
+            raise TrustError("root store entry is incomplete: %s" % e)
         ders = pem_certs(root.pem)
         if len(ders) != 1:
-            raise TrustError("корень %s: сертификатов %d, ожидался один"
+            raise TrustError("root %s: %d certificates, expected one"
                              % (root.id, len(ders)))
         got = fingerprint(ders[0])
         if got != root.sha256:
-            raise TrustError("корень %s: отпечаток %s не совпадает с "
-                             "заявленным %s — набор подменён"
+            raise TrustError("root %s: fingerprint %s does not match the "
+                             "declared %s — the store was tampered with"
                              % (root.id, got, root.sha256))
         roots.append(root)
 
     if not roots:
-        raise TrustError("набор пуст")
-    return Store(version, roots, "набор корней")
+        raise TrustError("the root store is empty")
+    return Store(version, roots, "root store")
 
 
 def store_for(config: Optional[dict] = None) -> Optional[Store]:

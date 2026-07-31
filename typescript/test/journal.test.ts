@@ -221,7 +221,7 @@ test("удалённая запись ловится как пропуск", asy
   const lines = fs.readFileSync(file, "utf8").split("\n").filter((l) => l.trim());
   fs.writeFileSync(file, [lines[0], ...lines.slice(2)].join("\n") + "\n");
   const r = verifyJournal(root);
-  assert.ok(r.problems.some((p) => p.includes("пропуск")), r.problems.join("; "));
+  assert.ok(r.problems.some((p) => p.includes("gap in the chain")), r.problems.join("; "));
 });
 
 test("подделка внутри пакета ловится", async () => {

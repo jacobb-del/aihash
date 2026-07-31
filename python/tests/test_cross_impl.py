@@ -106,14 +106,14 @@ def test_python_accepts(sealed):
 def test_js_accepts(sealed):
     rc, text = run_js(sealed)
     assert rc == 0, text
-    assert "сходится и запечатано" in text
+    assert "matches and is sealed" in text
 
 
 @needs_go
 def test_go_accepts(sealed):
     rc, text = run_go(sealed)
     assert rc == 0, text
-    assert "суточная отметка запечатана" in text
+    assert "daily checkpoint is sealed" in text
 
 
 @needs_go
@@ -121,8 +121,8 @@ def test_go_verifies_whole_journal(tmp_path):
     root, _ = write_journal(tmp_path)
     rc, text = run_go(root)
     assert rc == 0, text
-    assert "Цепь сходится на всём протяжении" in text
-    assert "Запечатано суток: 1" in text
+    assert "The chain matches end to end" in text
+    assert "Days sealed: 1" in text
 
 
 # --- подделка: все три отвергают одинаково ---------------------------------
@@ -184,7 +184,7 @@ def test_go_catches_deleted_record_in_journal(tmp_path):
         f.write("\n".join(lines[:1] + lines[2:]) + "\n")
     rc, text = run_go(root)
     assert rc == 1, text
-    assert "пропуск в цепи" in text
+    assert "gap in the chain" in text
 
 
 # --- содержимое пакета -----------------------------------------------------

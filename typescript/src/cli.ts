@@ -54,57 +54,58 @@ function full(ms: number | null | undefined): string {
 }
 
 const ANCHOR_WORD: Record<string, string> = {
-  ok: "проверена", unverified: "не проверена", failed: "НЕ СХОДИТСЯ",
+  ok: "verified", unverified: "not verified", failed: "DOES NOT MATCH",
 };
 
 function printBroken(r: Result): void {
-  console.log("НЕ СХОДИТСЯ\n");
+  console.log("DOES NOT MATCH\n");
   for (const p of r.problems) console.log("  " + p);
-  console.log("\nПрежнее содержимое не сохранено и восстановлению не подлежит —");
-  console.log("хранится только отпечаток. Определить, какое именно поле изменено,");
-  console.log("по отпечатку невозможно: он считается по записи целиком.");
+  console.log("\nThe previous content is not stored and cannot be recovered —");
+  console.log("only the fingerprint is kept. Which field was changed cannot be");
+  console.log("told from the fingerprint: it covers the record as a whole.");
 }
 
 function printBundle(r: Result, file: string): void {
   if (r.status === BROKEN) return printBroken(r);
-  console.log(`Пакет ${path.basename(file)}`);
-  console.log(`  журнал ${r.realmId}, поток ${r.streamId}, отрезок ${r.periodId}`);
+  console.log(`Bundle ${path.basename(file)}`);
+  console.log(`  journal ${r.realmId}, stream ${r.streamId}, segment ${r.periodId}`);
   if (r.disclosed) {
-    console.log(`  раскрыто записей ${r.disclosed[0]} из ${r.disclosed[1]} в отрезке`);
+    console.log(`  ${r.disclosed[0]} of ${r.disclosed[1]} records in the segment disclosed`);
   }
   console.log("");
-  for (const c of r.checks) console.log("  сходится: " + c.label);
+  for (const c of r.checks) console.log("  matches: " + c.label);
   console.log("");
   for (const a of r.anchors) {
-    console.log(`  пломба ${a.type}: ${ANCHOR_WORD[a.status]} — ${a.detail}`);
+    console.log(`  seal ${a.type}: ${ANCHOR_WORD[a.status]} — ${a.detail}`);
   }
   console.log("");
   if (r.status === SEALED) {
-    console.log("Вывод: содержимое совпадает с отпечатком, отпечаток входит в");
-    console.log("суточное дерево, суточная отметка запечатана.");
+    console.log("Verdict: the content matches its fingerprint, the fingerprint is");
+    console.log("in the daily tree, and the daily checkpoint is sealed.");
   } else if (r.status === UNVERIFIED) {
-    console.log("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево.");
-    console.log("Пломба за эти сутки поставлена, но здесь не подтверждена — см. её");
-    console.log("строку выше. Неизменность не доказана, пока проверка пломбы не");
-    console.log("доведена до конца; отсутствием пломбы это не является.");
+    console.log("Verdict: the content matches its fingerprint and is in the daily tree.");
+    console.log("A seal was placed for these days but is not confirmed here — see");
+    console.log("its line above. Integrity is not proven until verifying the seal");
+    console.log("is finished; this is not the same as having no seal.");
   } else {
-    console.log("Вывод: содержимое совпадает с отпечатком и входит в суточное дерево,");
-    console.log("но пломба за эти сутки не поставлена. Неизменность");
-    console.log("не доказана — доказана только внутренняя согласованность.");
+    console.log("Verdict: the content matches its fingerprint and is in the daily tree,");
+    console.log("but no seal was placed for these days. Integrity is not proven —");
+    console.log("only internal consistency is.");
   }
   if (r.lowerMs) {
-    console.log(`Запись существовала не ранее ${full(r.lowerMs)} (${r.lowerSource})`);
-    console.log("и не позднее постановки пломбы.");
+    console.log(`The record existed no earlier than ${full(r.lowerMs)} (${r.lowerSource})`);
+    console.log("and no later than the seal.");
   }
 }
 
 // Чего не хватает и где это взять. Без второй половины сообщение бесполезно:
 // получатель узнаёт, что проверка неполна, и не узнаёт, как её достроить.
 const HOW_TO_CONFIRM: Record<string, string> = {
-  rfc3161: "возьмите корневой сертификат службы штампов у неё самой " +
-           "(не из этого пакета) и сверьте подпись: openssl ts -verify " +
-           "-digest <суточная отметка> -in <файл.tsr> -CAfile <cacert.pem>",
-  opentimestamps: "поставьте клиент и повторите: " +
+  rfc3161: "obtain the timestamp authority root certificate from the " +
+           "authority itself (not from this bundle) and check the signature: " +
+           "openssl ts -verify -digest <daily checkpoint> -in <file.tsr> " +
+           "-CAfile <cacert.pem>",
+  opentimestamps: "install the client and retry: " +
                   "pip install opentimestamps-client",
 };
 
@@ -122,11 +123,11 @@ function printAnchorsOf(r: Result, dates: string[]): void {
 // — разбора CMS в SDK без зависимостей нет, — и объявлять из-за этого журнал
 // незапечатанным значит занижать доказательство за его владельца.
 function printUnconfirmed(r: Result): void {
-  console.log(`Пломба стоит, но здесь не подтверждена: суток ` +
-              `${r.unverifiedDays.length} (${r.unverifiedDays.join(", ")})`);
+  console.log(`Seal present but not confirmed here: ` +
+              `${r.unverifiedDays.length} day(s) (${r.unverifiedDays.join(", ")})`);
   printAnchorsOf(r, r.unverifiedDays);
-  console.log("  Это не «пломбы нет»: пломба за эти сутки поставлена, " +
-              "не доведена до конца её проверка.");
+  console.log("  This is not \"no seal\": a seal was placed for these days, " +
+              "verifying it was not finished.");
   const unverified = new Set(r.unverifiedDays);
   const seen = new Set<string>();
   for (const a of r.anchors) {
@@ -140,17 +141,17 @@ function printUnconfirmed(r: Result): void {
 
 function printJournal(r: Result): void {
   if (r.status === BROKEN) return printBroken(r);
-  console.log(`Журнал ${r.realmId}: записей ${r.records}`);
-  if (r.redacted) console.log(`  вычеркнуто полей: ${r.redacted}`);
-  console.log("Цепь сходится на всём протяжении.");
+  console.log(`Journal ${r.realmId}: ${r.records} record(s)`);
+  if (r.redacted) console.log(`  fields redacted: ${r.redacted}`);
+  console.log("The chain matches end to end.");
   if (r.sealedDays.length) {
-    console.log(`Запечатано суток: ${r.sealedDays.length} (${r.sealedDays.join(", ")})`);
+    console.log(`Days sealed: ${r.sealedDays.length} (${r.sealedDays.join(", ")})`);
     printAnchorsOf(r, r.sealedDays);
   }
   if (r.unverifiedDays.length) printUnconfirmed(r);
   if (r.openDays.length) {
-    console.log(`Не запечатано суток: ${r.openDays.length} ` +
-                `(${r.openDays.join(", ")}) — пломба ставится раз в сутки`);
+    console.log(`Days not sealed: ${r.openDays.length} ` +
+                `(${r.openDays.join(", ")}) — a seal is placed once a day`);
   }
 }
 

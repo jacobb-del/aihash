@@ -81,13 +81,13 @@ export function verifyJournal(root: string): Result {
   const r = blank("journal");
   const layout = new store.Layout(root);
   if (!store.exists(layout.realmFile)) {
-    r.problems.push("нет realm.json — каталог не является журналом aihash");
+    r.problems.push("no realm.json — this directory is not an aihash journal");
     return r;
   }
   const realm = layout.realm();
   r.realmId = realm.realm_id;
-  if (!ok(r, "версия формата", realm.format === core.FORMAT_VERSION, realm.format)) return r;
-  if (!ok(r, "хеш-функция", realm.hash === core.HASH_NAME, realm.hash)) return r;
+  if (!ok(r, "format version", realm.format === core.FORMAT_VERSION, realm.format)) return r;
+  if (!ok(r, "hash function", realm.hash === core.HASH_NAME, realm.hash)) return r;
 
   for (const streamId of layout.streams()) {
     // Звенья нужны только внутри проверки потока: удерживать их здесь
@@ -128,21 +128,21 @@ function verifyStream(layout: store.Layout, streamId: string,
     const recs = layout.readSegment(streamId, period);
     for (const rec of recs) {
       if (rec.seq !== expect) {
-        r.problems.push(`поток ${streamId}, отрезок ${period}: ожидался seq ` +
-                        `${expect}, найден ${rec.seq} — пропуск в цепи`);
+        r.problems.push(`stream ${streamId}, segment ${period}: expected seq ` +
+                        `${expect}, found ${rec.seq} — gap in the chain`);
         return out;
       }
       let croot: Buffer;
       try {
         croot = core.contentRoot(store.fieldsForRoot(rec.fields));
       } catch (e) {
-        r.problems.push(`поток ${streamId} seq=${rec.seq}: ${(e as Error).message}`);
+        r.problems.push(`stream ${streamId} seq=${rec.seq}: ${(e as Error).message}`);
         return out;
       }
       prev = core.link(prev, rec.seq, croot, rec.ts);
       if (prev.toString("hex") !== rec.link) {
         r.problems.push(
-          `поток ${streamId} seq=${rec.seq}: звено не совпадает с записанным`);
+          `stream ${streamId} seq=${rec.seq}: the link does not match the recorded one`);
         return out;
       }
       out.set(rec.seq, prev);
@@ -159,12 +159,12 @@ function verifyStream(layout: store.Layout, streamId: string,
     }
     const root = core.segRoot(segLinks);
     if (root.toString("hex") !== ck.segment_root) {
-      r.problems.push(`поток ${streamId}, отрезок ${period}: корень не совпадает`);
+      r.problems.push(`stream ${streamId}, segment ${period}: the root does not match`);
       return out;
     }
     if (ck.link_before !== linkBefore.toString("hex")) {
       r.problems.push(
-        `поток ${streamId}, отрезок ${period}: не связан с предыдущим отрезком`);
+        `stream ${streamId}, segment ${period}: not linked to the previous segment`);
       return out;
     }
     const want = core.segCkpt({
@@ -174,7 +174,7 @@ function verifyStream(layout: store.Layout, streamId: string,
       prevCheckpoint: Buffer.from(ck.prev_checkpoint, "hex"),
     });
     if (want.toString("hex") !== ck.checkpoint) {
-      r.problems.push(`поток ${streamId}, отрезок ${period}: отметка не совпадает`);
+      r.problems.push(`stream ${streamId}, segment ${period}: the checkpoint does not match`);
       return out;
     }
   }
@@ -188,28 +188,28 @@ function verifyDay(layout: store.Layout, realmId: string, date: string,
   for (const s of day.streams) {
     const seg = layout.readSegmentCkpt(s, date);
     if (!seg) {
-      r.problems.push(`сутки ${date}: нет отметки отрезка для потока ${s}`);
+      r.problems.push(`day ${date}: no segment checkpoint for stream ${s}`);
       return false;
     }
     ckpts.push(seg.checkpoint);
   }
   if (ckpts.join(",") !== day.segment_checkpoints.join(",")) {
-    r.problems.push(`сутки ${date}: перечень отметок отрезков не совпадает`);
+    r.problems.push(`day ${date}: the list of segment checkpoints does not match`);
     return false;
   }
   const root = core.dayRoot(day.segment_checkpoints.map((c) => Buffer.from(c, "hex")));
   if (root.toString("hex") !== day.day_root) {
-    r.problems.push(`сутки ${date}: суточный корень не совпадает`);
+    r.problems.push(`day ${date}: the daily root does not match`);
     return false;
   }
   const dck = core.dayCkpt(realmId, date, day.streams.length, root,
                            Buffer.from(day.prev_checkpoint, "hex"));
   if (dck.toString("hex") !== day.day_checkpoint) {
-    r.problems.push(`сутки ${date}: суточная отметка не совпадает`);
+    r.problems.push(`day ${date}: the daily checkpoint does not match`);
     return false;
   }
   if (day.prev_checkpoint !== prevExpected.toString("hex")) {
-    r.problems.push(`сутки ${date}: не связаны с предыдущими сутками`);
+    r.problems.push(`day ${date}: not linked to the previous day`);
     return false;
   }
 
@@ -223,7 +223,7 @@ function verifyDay(layout: store.Layout, realmId: string, date: string,
     mine.push(res);
     r.anchors.push(res);
     if (res.status === ANCHOR_FAILED) {
-      r.problems.push(`сутки ${date}: пломба ${res.type} не сходится — ${res.detail}`);
+      r.problems.push(`day ${date}: seal ${res.type} does not match — ${res.detail}`);
       return false;
     }
   }
@@ -239,7 +239,7 @@ export async function verifyBundle(file: string): Promise<Result> {
   try {
     files = readZip(await fsp.readFile(file));
   } catch (e) {
-    r.problems.push(`не читается как архив: ${(e as Error).message}`);
+    r.problems.push(`cannot be read as an archive: ${(e as Error).message}`);
     return r;
   }
   const need = <T>(name: string): T | null => {
@@ -283,8 +283,8 @@ export async function verifyBundle(file: string): Promise<Result> {
   r.periodId = manifest.period_id;
   r.disclosed = manifest.disclosed_of_total;
 
-  if (!ok(r, "версия формата", manifest.format === core.FORMAT_VERSION)) return r;
-  if (!ok(r, "хеш-функция", manifest.hash === core.HASH_NAME)) return r;
+  if (!ok(r, "format version", manifest.format === core.FORMAT_VERSION)) return r;
+  if (!ok(r, "hash function", manifest.hash === core.HASH_NAME)) return r;
 
   for (const rec of records) {
     const p = proofs.records?.[String(rec.seq)];
@@ -292,14 +292,14 @@ export async function verifyBundle(file: string): Promise<Result> {
     let croot: Buffer;
     try { croot = core.contentRoot(store.fieldsForRoot(rec.fields)); }
     catch (e) {
-      ok(r, `запись seq=${rec.seq}: поля`, false, (e as Error).message);
+      ok(r, `record seq=${rec.seq}: fields`, false, (e as Error).message);
       return r;
     }
     const l = core.link(Buffer.from(p.prev_link, "hex"), rec.seq, croot, rec.ts);
-    if (!ok(r, `запись seq=${rec.seq}: содержимое и звено`,
+    if (!ok(r, `record seq=${rec.seq}: content and link`,
             l.toString("hex") === p.link)) return r;
     const got = core.applyPath(core.segLeaf(l), p.segment_path);
-    if (!ok(r, `запись seq=${rec.seq}: путь до корня отрезка`,
+    if (!ok(r, `record seq=${rec.seq}: path to the segment root`,
             got.toString("hex") === seg.segment_root)) return r;
   }
 
@@ -314,24 +314,24 @@ export async function verifyBundle(file: string): Promise<Result> {
       prevCheckpoint: Buffer.from(seg.prev_checkpoint, "hex"),
     });
   } catch (e) {
-    ok(r, "отметка отрезка", false, (e as Error).message);
+    ok(r, "segment checkpoint", false, (e as Error).message);
     return r;
   }
-  if (!ok(r, "отметка отрезка", ck.toString("hex") === seg.checkpoint)) return r;
+  if (!ok(r, "segment checkpoint", ck.toString("hex") === seg.checkpoint)) return r;
 
   const droot = core.applyPath(core.dayLeaf(ck), proofs.day_path);
-  if (!ok(r, "путь до суточного корня", droot.toString("hex") === day.day_root)) return r;
+  if (!ok(r, "path to the daily root", droot.toString("hex") === day.day_root)) return r;
 
   const dck = core.dayCkpt(day.realm_id, day.date, day.streams.length,
                            Buffer.from(day.day_root, "hex"),
                            Buffer.from(day.prev_checkpoint, "hex"));
-  if (!ok(r, "суточная отметка", dck.toString("hex") === day.day_checkpoint)) return r;
+  if (!ok(r, "daily checkpoint", dck.toString("hex") === day.day_checkpoint)) return r;
 
   for (const name of [...files.keys()].filter((n) => n.startsWith("anchors/")).sort()) {
     const res = verifyAnchorBlob(name, files.get(name)!, dck, day.date);
     r.anchors.push(res);
     if (res.status === ANCHOR_FAILED) {
-      r.problems.push(`пломба ${res.type}: ${res.detail}`);
+      r.problems.push(`seal ${res.type}: ${res.detail}`);
     }
   }
   if (r.problems.length) return r;

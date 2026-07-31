@@ -28,7 +28,7 @@ def test_zip_bomb_is_refused_without_unpacking(tmp_path):
              zipfile.ZIP_DEFLATED)
     r = verify.verify_bundle(p)
     assert r["status"] == verify.BROKEN
-    assert "бомба" in " ".join(r["problems"])
+    assert "archive bomb" in " ".join(r["problems"])
 
 
 def test_entry_name_escaping_the_archive_is_refused(tmp_path):
@@ -36,7 +36,7 @@ def test_entry_name_escaping_the_archive_is_refused(tmp_path):
              {**{n: "{}" for n in GOOD}, "anchors/../../../../etc/passwd": "x"})
     r = verify.verify_bundle(p)
     assert r["status"] == verify.BROKEN
-    assert "выходит за его пределы" in " ".join(r["problems"])
+    assert "escapes it" in " ".join(r["problems"])
 
 
 def test_too_many_entries_is_refused(tmp_path):
@@ -45,15 +45,15 @@ def test_too_many_entries_is_refused(tmp_path):
               **{"anchors/x%04d" % i: "x" for i in range(600)}})
     r = verify.verify_bundle(p)
     assert r["status"] == verify.BROKEN
-    assert "записей, предел" in " ".join(r["problems"])
+    assert "entries, the limit" in " ".join(r["problems"])
 
 
 @pytest.mark.parametrize("records,expect", [
-    ('{"seq":"нет","ts":1,"fields":[]}', "не является числом"),
-    ('{"ts":1,"fields":[]}', "не является числом"),
-    ('{"seq":1,"ts":1}', "не является списком"),
+    ('{"seq":"нет","ts":1,"fields":[]}', "is not a number"),
+    ('{"ts":1,"fields":[]}', "is not a number"),
+    ('{"seq":1,"ts":1}', "is not a list"),
     ("не json", "Expecting"),
-    ("", "ни одной раскрытой записи"),
+    ("", "no disclosed records"),
 ])
 def test_malformed_record_gives_a_verdict_not_a_traceback(tmp_path, records, expect):
     p = make(tmp_path / "bad.seal",
@@ -81,7 +81,7 @@ def test_corrupt_journal_gives_a_verdict_not_a_traceback(tmp_path):
     (root / "days" / "2026-01-01.day.json").write_text("{ это не json")
     r = verify.verify_journal(str(root))
     assert not r.ok
-    assert "не читается" in " ".join(r.problems)
+    assert "cannot be read" in " ".join(r.problems)
 
 
 def test_stream_id_cannot_escape_its_directory():

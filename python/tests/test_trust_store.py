@@ -41,7 +41,7 @@ def test_tampered_root_is_rejected_not_used(tmp_path):
 
     with pytest.raises(trust.TrustError) as e:
         trust.load(str(path))
-    assert "подменён" in str(e.value)
+    assert "tampered with" in str(e.value)
     assert trust.store_for({"trust_store": str(path)}) is None
 
 

@@ -152,11 +152,11 @@ func verifyFeed(data []byte, target []byte, date string) AnchorResult {
 		var e feedEntry
 		if err := json.Unmarshal([]byte(line), &e); err != nil {
 			return anchorRes("feed", AnchorFailed,
-				fmt.Sprintf("запись ленты %d не разбирается", i+1))
+				fmt.Sprintf("feed entry %d does not parse", i+1))
 		}
 		if e.Prev != hexs(prev) {
 			return anchorRes("feed", AnchorFailed,
-				fmt.Sprintf("лента порвана на записи %d", i+1))
+				fmt.Sprintf("the feed is broken at entry %d", i+1))
 		}
 		tgt, err := unhex32(e.Target)
 		if err != nil {
@@ -165,7 +165,7 @@ func verifyFeed(data []byte, target []byte, date string) AnchorResult {
 		want := h([]byte("aihash/feed/1"), lp([]byte(e.Date)), tgt, prev)
 		if hexs(want) != e.Entry {
 			return anchorRes("feed", AnchorFailed,
-				fmt.Sprintf("отпечаток записи ленты %d не сходится", i+1))
+				fmt.Sprintf("fingerprint of feed entry %d does not match", i+1))
 		}
 		prev = want
 		if date == "" || e.Date == date {
@@ -183,23 +183,23 @@ func verifyFeed(data []byte, target []byte, date string) AnchorResult {
 	}
 	if len(distinct) > 1 {
 		return anchorRes("feed", AnchorFailed, fmt.Sprintf(
-			"за эти сутки в ленте опубликовано %d разных отметок — раздвоение журнала",
+			"%d different checkpoints published in the feed for these days — the journal was forked",
 			len(distinct)))
 	}
 	if found != nil {
 		return anchorPlaced("feed", AnchorOK, fmt.Sprintf(
-			"запись %d в ленте; сила пломбы зависит от того, опубликована ли лента вовне",
+			"entry %d in the feed; the strength of this seal depends on whether the feed is published outside",
 			found.Seq))
 	}
 	if len(sameDate) > 0 {
 		return anchorRes("feed", AnchorFailed, fmt.Sprintf(
-			"за эти сутки в ленте опубликована ДРУГАЯ отметка (%s…) — журнал не "+
-				"совпадает с опубликованным", sameDate[0].Target[:16]))
+			"a DIFFERENT checkpoint is published in the feed for these days (%s…) — "+
+				"the journal does not match it", sameDate[0].Target[:16]))
 	}
 	// Лента цела, но этих суток в ней нет: пломба не была поставлена. Это
 	// «пломбы нет», а не «пломба не подтверждена», поэтому Placed = false.
 	return AnchorResult{Type: "feed", Status: AnchorUnverified, Placed: false,
-		Detail: "лента цела, но этих суток в ней нет — пломба лентой не поставлена"}
+		Detail: "the feed is intact but does not contain these days — the feed placed no seal"}
 }
 
 // verifyAnchorBlob проверяет пломбу по её байтам, без сети.
@@ -213,23 +213,23 @@ func verifyAnchorBlob(name string, data, target []byte, date string) AnchorResul
 		// проверяется только то, что штамп относится именно к этой отметке.
 		if !bytes.Contains(data, target) {
 			return anchorRes("rfc3161", AnchorFailed,
-				"штамп поставлен не на эту суточную отметку")
+				"the timestamp was not placed on this daily checkpoint")
 		}
 		// Принадлежность штампа отметке доказана сырыми байтами выше: пломба
 		// за эти сутки поставлена, вопрос только в подписи.
 		return anchorPlaced("rfc3161", AnchorUnverified,
-			"штамп относится к этой отметке, но подпись службы не проверена — "+
-				"нужен её сертификат: openssl ts -verify")
+			"the timestamp covers this checkpoint, but the authority signature "+
+				"was not verified — its certificate is needed: openssl ts -verify")
 	case strings.HasSuffix(base, ".opentimestamps.ots"):
 		// Разобрать .ots здесь нечем: что это пломба над нашей отметкой — не
 		// установлено, поэтому и постановка пломбы не засчитывается.
 		return anchorRes("opentimestamps", AnchorUnverified,
-			"требуется клиент opentimestamps")
+			"the opentimestamps client is required")
 	default:
 		// Файл в anchors/ есть, а что это — неизвестно. Ни принадлежность
 		// отметке, ни сам факт постановки пломбы отсюда не следуют.
 		return anchorRes(base, AnchorUnverified,
-			"неизвестный тип пломбы — пропущена, но не засчитана")
+			"unknown seal type — skipped, and not counted")
 	}
 }
 
@@ -397,43 +397,43 @@ func VerifyBundle(path string) *Result {
 	r.RealmID, r.StreamID, r.PeriodID = manifest.RealmID, manifest.StreamID, manifest.PeriodID
 	r.Disclosed = manifest.Disclosed
 
-	if !r.ok("версия формата", manifest.Format == FormatVersion, manifest.Format) {
+	if !r.ok("format version", manifest.Format == FormatVersion, manifest.Format) {
 		return r
 	}
-	if !r.ok("хеш-функция", manifest.Hash == HashName, manifest.Hash) {
+	if !r.ok("hash function", manifest.Hash == HashName, manifest.Hash) {
 		return r
 	}
 
 	for _, rec := range records {
 		p, okp := proofs.Records[strconv.FormatUint(rec.Seq, 10)]
-		if !r.ok(fmt.Sprintf("запись seq=%d: путь в пакете", rec.Seq), okp, "") {
+		if !r.ok(fmt.Sprintf("record seq=%d: path in the bundle", rec.Seq), okp, "") {
 			return r
 		}
 		croot, err := contentRoot(rec.Fields)
 		if err != nil {
-			r.ok(fmt.Sprintf("запись seq=%d: поля", rec.Seq), false, err.Error())
+			r.ok(fmt.Sprintf("record seq=%d: fields", rec.Seq), false, err.Error())
 			return r
 		}
 		prevLink, err := unhex32(p.PrevLink)
 		if err != nil {
-			r.ok(fmt.Sprintf("запись seq=%d: предыдущее звено", rec.Seq), false, err.Error())
+			r.ok(fmt.Sprintf("record seq=%d: previous link", rec.Seq), false, err.Error())
 			return r
 		}
 		l, err := link(prevLink, rec.Seq, croot, rec.Ts)
 		if err != nil {
-			r.ok(fmt.Sprintf("запись seq=%d: звено", rec.Seq), false, err.Error())
+			r.ok(fmt.Sprintf("record seq=%d: link", rec.Seq), false, err.Error())
 			return r
 		}
-		if !r.ok(fmt.Sprintf("запись seq=%d: содержимое и звено", rec.Seq),
+		if !r.ok(fmt.Sprintf("record seq=%d: content and link", rec.Seq),
 			hexs(l) == p.Link, "") {
 			return r
 		}
 		got, err := applyPath(segLeaf(l), p.SegmentPath)
 		if err != nil {
-			r.ok(fmt.Sprintf("запись seq=%d: путь до корня отрезка", rec.Seq), false, err.Error())
+			r.ok(fmt.Sprintf("record seq=%d: path to the segment root", rec.Seq), false, err.Error())
 			return r
 		}
-		if !r.ok(fmt.Sprintf("запись seq=%d: путь до корня отрезка", rec.Seq),
+		if !r.ok(fmt.Sprintf("record seq=%d: path to the segment root", rec.Seq),
 			hexs(got) == segment.SegmentRoot, "") {
 			return r
 		}
@@ -441,19 +441,19 @@ func VerifyBundle(path string) *Result {
 
 	ck, err := segment.computeCheckpoint()
 	if err != nil {
-		r.ok("отметка отрезка", false, err.Error())
+		r.ok("segment checkpoint", false, err.Error())
 		return r
 	}
-	if !r.ok("отметка отрезка", hexs(ck) == segment.Checkpoint, "") {
+	if !r.ok("segment checkpoint", hexs(ck) == segment.Checkpoint, "") {
 		return r
 	}
 
 	droot, err := applyPath(dayLeaf(ck), proofs.DayPath)
 	if err != nil {
-		r.ok("путь до суточного корня", false, err.Error())
+		r.ok("path to the daily root", false, err.Error())
 		return r
 	}
-	if !r.ok("путь до суточного корня", hexs(droot) == day.DayRoot, "") {
+	if !r.ok("path to the daily root", hexs(droot) == day.DayRoot, "") {
 		return r
 	}
 
@@ -464,10 +464,10 @@ func VerifyBundle(path string) *Result {
 	}
 	dck, err := day.computeCheckpoint(dayRootBytes)
 	if err != nil {
-		r.ok("суточная отметка", false, err.Error())
+		r.ok("daily checkpoint", false, err.Error())
 		return r
 	}
-	if !r.ok("суточная отметка", hexs(dck) == day.DayCheckpoint, "") {
+	if !r.ok("daily checkpoint", hexs(dck) == day.DayCheckpoint, "") {
 		return r
 	}
 
@@ -482,7 +482,7 @@ func VerifyBundle(path string) *Result {
 		res := verifyAnchorBlob(n, files[n], dck, day.Date)
 		r.Anchors = append(r.Anchors, res)
 		if res.Status == AnchorFailed {
-			r.fail("пломба " + res.Type + ": " + res.Detail)
+			r.fail("seal " + res.Type + ": " + res.Detail)
 		}
 	}
 	if len(r.Problems) > 0 {
@@ -513,14 +513,14 @@ func VerifyJournal(root string) *Result {
 
 	var realm realmFile
 	if !readJSON(filepath.Join(root, "realm.json"), &realm, r) {
-		r.fail("нет realm.json — каталог не является журналом aihash")
+		r.fail("no realm.json — this directory is not an aihash journal")
 		return r
 	}
 	r.RealmID = realm.RealmID
-	if !r.ok("версия формата", realm.Format == FormatVersion, realm.Format) {
+	if !r.ok("format version", realm.Format == FormatVersion, realm.Format) {
 		return r
 	}
-	if !r.ok("хеш-функция", realm.Hash == HashName, realm.Hash) {
+	if !r.ok("hash function", realm.Hash == HashName, realm.Hash) {
 		return r
 	}
 
@@ -606,22 +606,22 @@ func verifyStream(root, streamID string, r *Result) map[uint64][]byte {
 
 		for _, rec := range recs {
 			if rec.Seq != expect {
-				r.fail(fmt.Sprintf("поток %s, отрезок %s: ожидался seq %d, найден %d — пропуск в цепи",
+				r.fail(fmt.Sprintf("stream %s, segment %s: expected seq %d, found %d — gap in the chain",
 					streamID, period, expect, rec.Seq))
 				return out
 			}
 			croot, err := contentRoot(rec.Fields)
 			if err != nil {
-				r.fail(fmt.Sprintf("поток %s seq=%d: %s", streamID, rec.Seq, err))
+				r.fail(fmt.Sprintf("stream %s seq=%d: %s", streamID, rec.Seq, err))
 				return out
 			}
 			prev, err = link(prev, rec.Seq, croot, rec.Ts)
 			if err != nil {
-				r.fail(fmt.Sprintf("поток %s seq=%d: %s", streamID, rec.Seq, err))
+				r.fail(fmt.Sprintf("stream %s seq=%d: %s", streamID, rec.Seq, err))
 				return out
 			}
 			if hexs(prev) != rec.Link {
-				r.fail(fmt.Sprintf("поток %s seq=%d: звено не совпадает с записанным",
+				r.fail(fmt.Sprintf("stream %s seq=%d: the link does not match the recorded one",
 					streamID, rec.Seq))
 				return out
 			}
@@ -649,22 +649,22 @@ func verifyStream(root, streamID string, r *Result) map[uint64][]byte {
 		}
 		root2, err := segRoot(segLinks)
 		if err != nil {
-			r.fail(fmt.Sprintf("поток %s, отрезок %s: %s", streamID, period, err))
+			r.fail(fmt.Sprintf("stream %s, segment %s: %s", streamID, period, err))
 			return out
 		}
 		if hexs(root2) != seg.SegmentRoot {
-			r.fail(fmt.Sprintf("поток %s, отрезок %s: корень отрезка не совпадает",
+			r.fail(fmt.Sprintf("stream %s, segment %s: корень отрезка не совпадает",
 				streamID, period))
 			return out
 		}
 		if seg.LinkBefore != hexs(linkBefore) {
-			r.fail(fmt.Sprintf("поток %s, отрезок %s: не связан с предыдущим отрезком",
+			r.fail(fmt.Sprintf("stream %s, segment %s: не связан с предыдущим отрезком",
 				streamID, period))
 			return out
 		}
 		want, err := seg.computeCheckpoint()
 		if err != nil || hexs(want) != seg.Checkpoint {
-			r.fail(fmt.Sprintf("поток %s, отрезок %s: отметка отрезка не совпадает",
+			r.fail(fmt.Sprintf("stream %s, segment %s: отметка отрезка не совпадает",
 				streamID, period))
 			return out
 		}
@@ -678,31 +678,31 @@ func verifyDay(root, realmID, date string, day Day, prevExpected []byte, r *Resu
 		var seg Segment
 		p := filepath.Join(root, "streams", s, "segments", date+".seg.json")
 		if !readJSON(p, &seg, r) {
-			r.fail(fmt.Sprintf("сутки %s: нет отметки отрезка для потока %s", date, s))
+			r.fail(fmt.Sprintf("day %s: no segment checkpoint for stream %s", date, s))
 			return false
 		}
 		ckpts = append(ckpts, seg.Checkpoint)
 	}
 	if strings.Join(ckpts, ",") != strings.Join(day.SegmentCheckpoints, ",") {
-		r.fail(fmt.Sprintf("сутки %s: перечень отметок отрезков не совпадает", date))
+		r.fail(fmt.Sprintf("day %s: the list of segment checkpoints does not match", date))
 		return false
 	}
 	if !sort.StringsAreSorted(day.Streams) {
-		r.fail(fmt.Sprintf("сутки %s: потоки не отсортированы по stream_id", date))
+		r.fail(fmt.Sprintf("day %s: streams are not sorted by stream_id", date))
 		return false
 	}
 	root2, err := day.computeRoot()
 	if err != nil || hexs(root2) != day.DayRoot {
-		r.fail(fmt.Sprintf("сутки %s: суточный корень не совпадает", date))
+		r.fail(fmt.Sprintf("day %s: the daily root does not match", date))
 		return false
 	}
 	dck, err := day.computeCheckpoint(root2)
 	if err != nil || hexs(dck) != day.DayCheckpoint {
-		r.fail(fmt.Sprintf("сутки %s: суточная отметка не совпадает", date))
+		r.fail(fmt.Sprintf("day %s: the daily checkpoint does not match", date))
 		return false
 	}
 	if day.PrevCheckpoint != hexs(prevExpected) {
-		r.fail(fmt.Sprintf("сутки %s: не связаны с предыдущими сутками", date))
+		r.fail(fmt.Sprintf("day %s: not linked to the previous day", date))
 		return false
 	}
 
@@ -728,7 +728,7 @@ func verifyDay(root, realmID, date string, day Day, prevExpected []byte, r *Resu
 		mine = append(mine, res)
 		r.Anchors = append(r.Anchors, res)
 		if res.Status == AnchorFailed {
-			r.fail(fmt.Sprintf("сутки %s: пломба %s не сходится — %s", date, res.Type, res.Detail))
+			r.fail(fmt.Sprintf("day %s: seal %s does not match — %s", date, res.Type, res.Detail))
 			return false
 		}
 	}

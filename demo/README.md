@@ -17,12 +17,12 @@ aihash verify ./demo/journal
 команду ещё раз:
 
 ```
-НЕ СХОДИТСЯ
+DOES NOT MATCH
 
-  поток voice-eu-3 seq=3: звено не совпадает с записанным
+  stream voice-eu-3 seq=3: the link does not match the recorded one
 ```
 
-Код возврата `1`. Верните символ на место — снова `Запечатано суток: 1`.
+Код возврата `1`. Верните символ на место — снова `Days sealed: 1`.
 
 ## Что здесь есть
 

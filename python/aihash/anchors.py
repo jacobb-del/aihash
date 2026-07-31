@@ -68,7 +68,7 @@ def stamp(kind: str, target: bytes, layout: store.Layout, date: str,
           config: dict) -> dict:
     fn = _STAMPERS.get(kind)
     if fn is None:
-        raise core.FormatError("неизвестный тип пломбы: %s" % kind)
+        raise core.FormatError("unknown seal type: %s" % kind)
     return fn(target, layout, date, config)
 
 
@@ -82,7 +82,7 @@ def _stamp_rfc3161(target: bytes, layout: store.Layout, date: str,
     with urllib.request.urlopen(req, timeout=config.get("timeout", 15.0)) as r:
         body = r.read()
     if not body:
-        raise RuntimeError("служба штампов вернула пустой ответ")
+        raise RuntimeError("the timestamp authority returned an empty response")
     path = layout.anchor_file(date, "rfc3161", "tsr")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "wb") as f:
@@ -97,7 +97,7 @@ def _stamp_ots(target: bytes, layout: store.Layout, date: str,
     exe = shutil.which("ots")
     if exe is None:
         raise RuntimeError(
-            "клиент opentimestamps не установлен (pip install opentimestamps-client)")
+            "the opentimestamps client is not installed (pip install opentimestamps-client)")
     tmp = layout.anchor_file(date, "opentimestamps", "bin")
     os.makedirs(os.path.dirname(tmp), exist_ok=True)
     with open(tmp, "wb") as f:
@@ -175,7 +175,7 @@ def verify_file(path: str, target: bytes, config: Optional[dict] = None,
         # Файл в anchors/ есть, а что это — неизвестно. Ни принадлежность
         # отметке, ни сам факт постановки пломбы отсюда не следуют.
         res = {"type": "unknown", "status": UNVERIFIED, "path": path,
-               "detail": "неизвестный тип пломбы — пропущена, но не засчитана"}
+               "detail": "unknown seal type — skipped, and not counted"}
     res.setdefault("placed", False)
     return res
 
@@ -207,15 +207,15 @@ def _verify_feed(path: str, target: bytes,
                 e = json.loads(line)
             except json.JSONDecodeError:
                 return {"type": "feed", "status": FAILED, "path": path,
-                        "detail": "запись ленты %d не разбирается" % n}
+                        "detail": "feed entry %d does not parse" % n}
             if e.get("prev") != prev.hex():
                 return {"type": "feed", "status": FAILED, "path": path,
-                        "detail": "лента порвана на записи %d" % n}
+                        "detail": "the feed is broken at entry %d" % n}
             want = core.H(b"aihash/feed/1", core.lp(e["date"].encode()),
                           bytes.fromhex(e["target"]), prev)
             if want.hex() != e["entry"]:
                 return {"type": "feed", "status": FAILED, "path": path,
-                        "detail": "отпечаток записи ленты %d не сходится" % n}
+                        "detail": "fingerprint of feed entry %d does not match" % n}
             prev = want
             if date is None or e["date"] == date:
                 same_date.append(e)
@@ -225,21 +225,21 @@ def _verify_feed(path: str, target: bytes,
     distinct = {e["target"] for e in same_date}
     if len(distinct) > 1:
         return {"type": "feed", "status": FAILED, "path": path,
-                "detail": "за эти сутки в ленте опубликовано %d разных отметок "
-                          "— раздвоение журнала" % len(distinct)}
+                "detail": "%d different checkpoints are published in the feed for "
+                          "these days — the journal was forked" % len(distinct)}
     if found is not None:
         return {"type": "feed", "status": OK, "path": path, "placed": True,
-                "detail": "запись %d в ленте; сила пломбы зависит от того, "
-                          "опубликована ли лента вовне" % found["seq"]}
+                "detail": "entry %d in the feed; the strength of this seal depends "
+                          "on whether the feed is published outside" % found["seq"]}
     if same_date:
         return {"type": "feed", "status": FAILED, "path": path,
-                "detail": "за эти сутки в ленте опубликована ДРУГАЯ отметка "
-                          "(%s…) — журнал не совпадает с опубликованным"
+                "detail": "a DIFFERENT checkpoint is published in the feed for these "
+                          "days (%s…) — the journal does not match it"
                           % same_date[0]["target"][:16]}
     # Лента цела, но этих суток в ней нет: пломба не была поставлена.
     return {"type": "feed", "status": UNVERIFIED, "path": path, "placed": False,
-            "detail": "лента цела, но этих суток в ней нет — пломба лентой "
-                      "не поставлена"}
+            "detail": "the feed is intact but does not contain these days — the "
+                      "feed placed no seal"}
 
 
 def _verify_rfc3161(path: str, target: bytes, config: dict) -> dict:
@@ -260,7 +260,7 @@ def _verify_rfc3161(path: str, target: bytes, config: dict) -> dict:
         data = f.read()
     if target not in data:
         return {"type": "rfc3161", "status": FAILED, "path": path,
-                "detail": "штамп поставлен не на эту суточную отметку"}
+                "detail": "the timestamp was not placed on this daily checkpoint"}
 
     # Ниже этой строки принадлежность штампа отметке уже доказана сырыми
     # байтами: пломба за эти сутки поставлена, вопрос только в подписи.
@@ -269,8 +269,8 @@ def _verify_rfc3161(path: str, target: bytes, config: dict) -> dict:
     openssl = shutil.which("openssl")
     if openssl is None:
         return dict(placed, status=UNVERIFIED,
-                    detail="штамп относится к этой отметке, но openssl не "
-                           "найден — подпись службы не проверена")
+                    detail="the timestamp covers this checkpoint, but openssl "
+                           "was not found — signature not verified")
 
     ts = None
     info = _run([openssl, "ts", "-reply", "-in", path, "-text"])
@@ -281,14 +281,14 @@ def _verify_rfc3161(path: str, target: bytes, config: dict) -> dict:
     if override and os.path.exists(override):
         return _verify_signature(openssl, path, target, config, override,
                                  dict(placed, time=ts),
-                                 origin="переопределение --tsa-ca")
+                                 origin="--tsa-ca override")
 
     store = trust_mod.store_for(config)
     if store is None:
         return dict(placed, status=UNVERIFIED, time=ts,
-                    detail="штамп относится к этой отметке, но набор корней "
-                           "недоступен — подпись не проверена; укажите "
-                           "корневой сертификат службы через --tsa-ca")
+                    detail="the timestamp covers this checkpoint, but the root store "
+                           "is unavailable — signature not verified; pass the "
+                           "authority root certificate via --tsa-ca")
 
     # Корни пробуются по одному, чтобы вердикт мог назвать сработавший: «чем
     # именно вы это проверили» — законный вопрос стороны спора.
@@ -300,7 +300,7 @@ def _verify_rfc3161(path: str, target: bytes, config: dict) -> dict:
                 f.write(root.pem)
             res = _verify_signature(openssl, path, target, config, ca_path,
                                     dict(placed, time=ts),
-                                    origin="%s версии %d, корень %s"
+                                    origin="%s version %d, root %s"
                                            % (store.origin, store.version, root.id))
             if res["status"] == OK:
                 res["root"] = {"id": root.id, "name": root.name,
@@ -337,9 +337,9 @@ def _verify_signature(openssl: str, path: str, target: bytes, config: dict,
     v = _run(cmd)
     if v is None or v.returncode != 0:
         return dict(base, status=UNVERIFIED,
-                    detail="подпись не сошлась с %s" % origin)
+                    detail="signature did not verify against %s" % origin)
     return dict(base, status=OK,
-                detail="подпись службы штампов проверена (%s)" % origin)
+                detail="timestamp authority signature verified (%s)" % origin)
 
 
 def _unknown_root(openssl: str, path: str, data: bytes, config: dict,
@@ -368,26 +368,26 @@ def _unknown_root(openssl: str, path: str, data: bytes, config: dict,
             if cert["sha256"] == root.sha256 or cert["pubkey"] == known["pubkey"]:
                 continue
             return dict(base, status=FAILED,
-                        detail="корень внутри штампа назвался известной службой "
-                               "(%s), но это другой ключ: отпечаток %s… вместо "
-                               "%s… — выдача себя за чужую службу"
+                        detail="a root inside the timestamp claims to be a known "
+                               "authority (%s) but carries a different key: "
+                               "fingerprint %s… instead of %s… — impersonation"
                                % (root.id, cert["sha256"][:16], root.sha256[:16]))
 
     if presented:
         what = "; ".join(
-            "%s (отпечаток %s…)" % (c["subject"] or "без имени", c["sha256"][:24])
+            "%s (fingerprint %s…)" % (c["subject"] or "unnamed", c["sha256"][:24])
             for c in presented)
-        need = ("нужен корневой сертификат службы: %s. Возьмите его у самой "
-                "службы, не из этого пакета, и повторите с "
-                "--tsa-ca <файл.pem>" % what)
+        need = ("the authority root certificate is needed: %s. Obtain it from "
+                "the authority itself, not from this bundle, and retry with "
+                "--tsa-ca <file.pem>" % what)
     else:
-        need = ("какой именно корень нужен, из штампа определить не удалось; "
-                "возьмите корневой сертификат службы у неё самой и повторите "
-                "с --tsa-ca <файл.pem>")
+        need = ("which root is needed could not be determined from the "
+                "timestamp; obtain the authority root certificate from the "
+                "authority itself and retry with --tsa-ca <file.pem>")
 
     return dict(base, status=UNVERIFIED, trust_version=store.version,
-                detail="штамп относится к этой отметке, но его службы нет в "
-                       "наборе корней (версия %d): %s" % (store.version, need))
+                detail="the timestamp covers this checkpoint, but its authority "
+                       "is not in the root store (version %d): %s" % (store.version, need))
 
 
 def _presented_roots(openssl: str, path: str, config: dict) -> list:
@@ -458,7 +458,7 @@ def _verify_ots(path: str, target: bytes, config: dict) -> dict:
     exe = shutil.which("ots")
     if exe is None:
         return {"type": "opentimestamps", "status": UNVERIFIED, "path": path,
-                "detail": "клиент opentimestamps не установлен"}
+                "detail": "the opentimestamps client is not installed"}
     tmp = path + ".target"
     with open(tmp, "wb") as f:
         f.write(target)
@@ -475,7 +475,7 @@ def _verify_ots(path: str, target: bytes, config: dict) -> dict:
         # Клиенту скормлена сама отметка: он разобрал файл и подтвердил, что
         # это пломба именно над ней, — не хватает только включения в блок.
         return {"type": "opentimestamps", "status": UNVERIFIED, "path": path,
-                "placed": True, "detail": "пломба ожидает включения в блок"}
+                "placed": True, "detail": "the seal is waiting to be included in a block"}
     return {"type": "opentimestamps", "status": FAILED, "path": path,
             "detail": out.strip()[:200]}
 

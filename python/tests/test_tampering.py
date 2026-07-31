@@ -204,7 +204,7 @@ def test_02_record_5_deleted_entirely(sealed):
     save_records(root, date, recs)
     assert len(load_records(root, date)) == N - 1, "порча не состоялась"
 
-    assert_all_reject(root, "пропуск")
+    assert_all_reject(root, "gap")
 
 
 # --- 3. запись дописана после постановки пломбы -----------------------------
@@ -316,7 +316,7 @@ def test_05_whole_chain_recomputed_with_new_content(sealed):
 
     # Всё внутри журнала пересчитано и согласовано: цепь, отметки, дерево.
     # Единственное, чего противник переписать не может, — опубликованная пломба.
-    assert_all_reject(root, "пломба")
+    assert_all_reject(root, "seal")
 
 
 # --- 6. файл пломбы удалён: «не подтверждено», а НЕ «ОК» --------------------
@@ -340,9 +340,9 @@ def test_06_anchor_file_removed_is_not_proven_not_ok(sealed):
 
     for name, cmd in EXTERNAL:
         rc, out = _run(cmd, root)
-        assert "Запечатано суток" not in out, \
+        assert "Days sealed" not in out, \
             "%s объявил запечатанным журнал без пломбы:\n%s" % (name, out)
-        assert "Не запечатано суток" in out, \
+        assert "Days not sealed" in out, \
             "%s не сказал, что пломбы нет:\n%s" % (name, out)
 
 
@@ -367,7 +367,7 @@ def test_06b_bundle_without_anchor_does_not_exit_zero(sealed, tmp_path):
     for name, cmd in EXTERNAL:
         rc, text = _run(cmd, bare)
         assert rc != 0, "%s вернул ноль на пакете без пломбы:\n%s" % (name, text)
-        assert "не доказана" in text, "%s не сказал этого словами:\n%s" % (name, text)
+        assert "is not proven" in text, "%s не сказал этого словами:\n%s" % (name, text)
 
 
 # --- 7. подставлена пломба от другого дня -----------------------------------
@@ -385,7 +385,7 @@ def test_07_anchor_from_another_day(sealed):
     shutil.copy(os.path.join(FIXTURE, meta["file"]),
                 layout.anchor_file(date, "rfc3161", "tsr"))
 
-    assert_all_reject(root, "не на эту")
+    assert_all_reject(root, "not placed on this")
 
 
 def test_07b_feed_publishes_a_different_mark_for_this_day(sealed):
@@ -411,7 +411,7 @@ def test_07b_feed_publishes_a_different_mark_for_this_day(sealed):
     assert json.loads(open(feed, encoding="utf-8").read())["target"] \
         != original["target"], "порча не состоялась"
 
-    assert_all_reject(root, "ДРУГАЯ отметка")
+    assert_all_reject(root, "DIFFERENT checkpoint")
 
 
 def test_07c_two_marks_for_one_day_is_forking(sealed):
@@ -431,7 +431,7 @@ def test_07c_two_marks_for_one_day_is_forking(sealed):
         f.write(json.dumps({"seq": 2, "date": date, "target": other,
                             "prev": prev.hex(), "entry": entry.hex()}) + "\n")
 
-    assert_all_reject(root, "раздвоение")
+    assert_all_reject(root, "forked")
 
 
 # --- 8. изменена только временная метка -------------------------------------
@@ -457,8 +457,8 @@ def test_08_only_the_timestamp_changed(sealed):
 
 @pytest.mark.parametrize("target,expect", [
     ("records.jsonl", "seq=5"),
-    ("segment.json", "путь до корня отрезка"),
-    ("day.json", "путь до суточного корня"),
+    ("segment.json", "path to the segment root"),
+    ("day.json", "path to the daily root"),
 ])
 def test_09_bundle_tampering_is_caught(sealed, tmp_path, target, expect):
     """Пакет — это то, что реально попадает к оппоненту."""

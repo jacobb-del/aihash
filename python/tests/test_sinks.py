@@ -71,7 +71,7 @@ def test_go_binary_verifies_the_archive(sealed, tmp_path):
     r = subprocess.run([GO, sink.root], capture_output=True, timeout=60)
     text = (r.stdout + r.stderr).decode("utf-8", "replace")
     assert r.returncode == 0, text
-    assert "Цепь сходится на всём протяжении" in text
+    assert "The chain matches end to end" in text
 
 
 def test_archived_files_are_read_only(sealed, tmp_path):

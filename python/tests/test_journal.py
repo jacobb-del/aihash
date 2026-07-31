@@ -372,7 +372,7 @@ def test_deleted_record_is_caught(root):
         f.write("\n".join(lines[:1] + lines[2:]) + "\n")
     r = verify.verify_journal(root)
     assert not r.ok
-    assert "пропуск" in r.problems[0]
+    assert "gap" in r.problems[0]
 
 
 def test_tampered_bundle_is_caught(root, tmp_path):
@@ -422,7 +422,7 @@ def test_cli_flow(root, tmp_path, capsys):
     capsys.readouterr()
     assert cli.main(["verify", out]) == 0
     text = capsys.readouterr().out
-    assert "не ранее" in text or "суточное дерево" in text
+    assert "no earlier than" in text or "daily tree" in text
     assert cli.main(["ls", "--root", root]) == 0
 
 
@@ -431,4 +431,4 @@ def test_cli_verify_reports_broken(root, capsys):
     _tamper(root, 3, "output.text", "другое", period=today())
     assert cli.main(["verify", root]) == 1
     text = capsys.readouterr().out
-    assert "НЕ СХОДИТСЯ" in text
+    assert "DOES NOT MATCH" in text

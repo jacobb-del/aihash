@@ -51,10 +51,10 @@ class BundleError(core.FormatError):
 
 def _safe_name(name: str) -> str:
     if name.startswith("/") or name.startswith("\\") or ":" in name.split("/")[0][1:]:
-        raise BundleError("недопустимое имя в архиве: %r" % name)
+        raise BundleError("illegal name in the archive: %r" % name)
     parts = name.replace("\\", "/").split("/")
     if any(p in ("..", ".") for p in parts):
-        raise BundleError("имя в архиве выходит за его пределы: %r" % name)
+        raise BundleError("a name in the archive escapes it: %r" % name)
     return name
 
 
@@ -65,7 +65,7 @@ def read_bundle(path: str) -> Dict[str, bytes]:
     with zipfile.ZipFile(path) as z:
         infos = z.infolist()
         if len(infos) > MAX_ENTRIES:
-            raise BundleError("в архиве %d записей, предел %d"
+            raise BundleError("the archive has %d entries, the limit is %d"
                               % (len(infos), MAX_ENTRIES))
         for info in infos:
             if info.is_dir():
@@ -73,15 +73,15 @@ def read_bundle(path: str) -> Dict[str, bytes]:
             name = _safe_name(info.filename)
             if info.file_size > MAX_ENTRY_BYTES:
                 raise BundleError(
-                    "%s: заявлено %d байт, предел %d — архивная бомба"
+                    "%s: declares %d bytes, the limit is %d — archive bomb"
                     % (name, info.file_size, MAX_ENTRY_BYTES))
             with z.open(info) as fh:
                 data = fh.read(MAX_ENTRY_BYTES + 1)
             if len(data) > MAX_ENTRY_BYTES:
-                raise BundleError("%s: распакованный размер превышает предел" % name)
+                raise BundleError("%s: the uncompressed size exceeds the limit" % name)
             total += len(data)
             if total > MAX_TOTAL_BYTES:
-                raise BundleError("суммарный размер архива превышает %d байт"
+                raise BundleError("the total archive size exceeds %d bytes"
                                   % MAX_TOTAL_BYTES)
             files[name] = data
     return files
@@ -90,7 +90,7 @@ def read_bundle(path: str) -> Dict[str, bytes]:
 def _need_int(obj: dict, key: str, where: str) -> int:
     v = obj.get(key)
     if not isinstance(v, int) or isinstance(v, bool) or v < 0:
-        raise BundleError("%s: поле %r отсутствует или не является числом"
+        raise BundleError("%s: field %r is missing or is not a number"
                           % (where, key))
     return v
 
@@ -98,7 +98,7 @@ def _need_int(obj: dict, key: str, where: str) -> int:
 def _need_list(obj: dict, key: str, where: str) -> list:
     v = obj.get(key)
     if not isinstance(v, list):
-        raise BundleError("%s: поле %r отсутствует или не является списком"
+        raise BundleError("%s: field %r is missing or is not a list"
                           % (where, key))
     return v
 
@@ -142,10 +142,10 @@ def verify_journal(root: str, config: Optional[dict] = None) -> Result:
         return _verify_journal(root, config or {})
     except (core.FormatError, json.JSONDecodeError, UnicodeDecodeError,
             KeyError, TypeError, ValueError) as e:
-        r.fail("журнал не читается: %s" % e)
+        r.fail("the journal cannot be read: %s" % e)
         return r
     except OSError as e:
-        r.fail("журнал недоступен: %s" % e)
+        r.fail("the journal is unavailable: %s" % e)
         return r
 
 
@@ -154,16 +154,16 @@ def _verify_journal(root: str, config: dict) -> Result:
     r = Result()
 
     if not os.path.exists(layout.realm_file):
-        r.fail("нет realm.json — каталог не является журналом aihash")
+        r.fail("no realm.json — this directory is not an aihash journal")
         return r
     realm = layout.realm()
     r.realm = realm
     if realm.get("format") != core.FORMAT_VERSION:
-        r.fail("версия формата %r не поддерживается этим верификатором"
+        r.fail("format version %r is not supported by this verifier"
                % realm.get("format"))
         return r
     if realm.get("hash") != core.HASH_NAME:
-        r.fail("хеш-функция %r не поддерживается" % realm.get("hash"))
+        r.fail("hash function %r is not supported" % realm.get("hash"))
         return r
 
     for stream_id in layout.streams():
@@ -190,18 +190,18 @@ def _verify_stream(layout: store.Layout, stream_id: str, r: Result) -> Dict[int,
         for rec in recs:
             seq = rec["seq"]
             if seq != expect:
-                r.fail("поток %s, отрезок %s: ожидался seq %d, найден %d — "
-                       "пропуск в цепи" % (stream_id, period, expect, seq))
+                r.fail("stream %s, segment %s: expected seq %d, found %d — "
+                       "gap in the chain" % (stream_id, period, expect, seq))
                 return links
             try:
                 fields = store.fields_for_root(rec["fields"])
                 croot = core.content_root(fields)
             except core.FormatError as e:
-                r.fail("поток %s seq=%d: %s" % (stream_id, seq, e))
+                r.fail("stream %s seq=%d: %s" % (stream_id, seq, e))
                 return links
             prev = core.link(prev, seq, croot, rec["ts"])
             if prev.hex() != rec.get("link"):
-                r.fail("поток %s seq=%d: звено не совпадает с записанным"
+                r.fail("stream %s seq=%d: the link does not match the recorded one"
                        % (stream_id, seq))
                 return links
             links[seq] = prev
@@ -219,13 +219,13 @@ def _verify_stream(layout: store.Layout, stream_id: str, r: Result) -> Dict[int,
                                  bytes.fromhex(ck["link_last"]), root,
                                  bytes.fromhex(ck["prev_checkpoint"]))
             if root.hex() != ck["segment_root"]:
-                r.fail("поток %s, отрезок %s: корень отрезка не совпадает"
+                r.fail("stream %s, segment %s: the segment root does not match"
                        % (stream_id, period))
             elif ck["link_before"] != link_before.hex():
-                r.fail("поток %s, отрезок %s: не связан с предыдущим отрезком"
+                r.fail("stream %s, segment %s: not linked to the previous segment"
                        % (stream_id, period))
             elif want.hex() != ck["checkpoint"]:
-                r.fail("поток %s, отрезок %s: отметка отрезка не совпадает"
+                r.fail("stream %s, segment %s: the segment checkpoint does not match"
                        % (stream_id, period))
         info["periods"].append(state)
 
@@ -243,25 +243,25 @@ def _verify_day(layout: store.Layout, realm_id: str, date: str, r: Result,
     for stream_id in day["streams"]:
         ck = layout.read_segment_ckpt(stream_id, date)
         if ck is None:
-            r.fail("сутки %s: нет отметки отрезка для потока %s" % (date, stream_id))
+            r.fail("day %s: no segment checkpoint for stream %s" % (date, stream_id))
             entry["status"] = BROKEN
             r.days.append(entry)
             return
         ckpts.append(bytes.fromhex(ck["checkpoint"]))
 
     if [c.hex() for c in ckpts] != day["segment_checkpoints"]:
-        r.fail("сутки %s: перечень отметок отрезков не совпадает" % date)
+        r.fail("day %s: the list of segment checkpoints does not match" % date)
         entry["status"] = BROKEN
         r.days.append(entry)
         return
     if day["streams"] != sorted(day["streams"]):
-        r.fail("сутки %s: потоки не отсортированы по stream_id" % date)
+        r.fail("day %s: streams are not sorted by stream_id" % date)
 
     root = core.day_root(ckpts)
     want = core.day_ckpt(realm_id, date, len(ckpts), root,
                          bytes.fromhex(day["prev_checkpoint"]))
     if root.hex() != day["day_root"] or want.hex() != day["day_checkpoint"]:
-        r.fail("сутки %s: суточная отметка не совпадает" % date)
+        r.fail("day %s: the daily checkpoint does not match" % date)
         entry["status"] = BROKEN
         r.days.append(entry)
         return
@@ -272,14 +272,14 @@ def _verify_day(layout: store.Layout, realm_id: str, date: str, r: Result,
         if prior:
             prev_expected = bytes.fromhex(prior["day_checkpoint"])
     if day["prev_checkpoint"] != prev_expected.hex():
-        r.fail("сутки %s: не связаны с предыдущими сутками" % date)
+        r.fail("day %s: not linked to the previous day" % date)
 
     target = bytes.fromhex(day["day_checkpoint"])
     for path in layout.anchors_for(date) + _feed_paths(layout, config):
         res = anchors_mod.verify_file(path, target, config, date=date)
         entry["anchors"].append(res)
         if res["status"] == anchors_mod.FAILED:
-            r.fail("сутки %s: пломба %s не сходится — %s"
+            r.fail("day %s: seal %s does not match — %s"
                    % (date, res["type"], res.get("detail", "")))
     entry["status"] = _day_status(entry["anchors"])
     r.days.append(entry)
@@ -317,7 +317,7 @@ def _report_unsealed(layout: store.Layout, r: Result) -> None:
             if p["period"] not in sealed_dates and p["count"]:
                 r.days.append({"date": p["period"], "status": OPEN, "anchors": [],
                                "streams": [s["stream_id"]],
-                               "note": "сутки не закрыты — пломбы ещё нет"})
+                               "note": "the day is not closed — there is no seal yet"})
 
 
 # --- пакет доказательства ---------------------------------------------------
@@ -345,13 +345,13 @@ def verify_bundle(path: str, config: Optional[dict] = None) -> dict:
         for req in ("manifest.json", "records.jsonl", "proofs.json",
                     "segment.json", "day.json"):
             if req not in names:
-                out["problems"].append("в пакете нет %s" % req)
+                out["problems"].append("the bundle has no %s" % req)
                 return out
 
         def obj(name):
             v = json.loads(files[name].decode("utf-8"))
             if not isinstance(v, dict):
-                raise BundleError("%s: ожидался объект" % name)
+                raise BundleError("%s: an object was expected" % name)
             return v
 
         manifest = obj("manifest.json")
@@ -364,22 +364,22 @@ def verify_bundle(path: str, config: Optional[dict] = None) -> dict:
                 continue
             rec = json.loads(line)
             if not isinstance(rec, dict):
-                raise BundleError("records.jsonl строка %d: ожидался объект" % n)
-            _need_int(rec, "seq", "records.jsonl строка %d" % n)
-            _need_int(rec, "ts", "records.jsonl строка %d" % n)
-            _need_list(rec, "fields", "records.jsonl строка %d" % n)
+                raise BundleError("records.jsonl line %d: an object was expected" % n)
+            _need_int(rec, "seq", "records.jsonl line %d" % n)
+            _need_int(rec, "ts", "records.jsonl line %d" % n)
+            _need_list(rec, "fields", "records.jsonl line %d" % n)
             records.append(rec)
         if not records:
-            raise BundleError("в пакете нет ни одной раскрытой записи")
+            raise BundleError("the bundle has no disclosed records")
         if not isinstance(proofs.get("records"), dict):
-            raise BundleError("proofs.json: нет раздела records")
+            raise BundleError("proofs.json: no records section")
         anchor_blobs = {n: files[n] for n in names if n.startswith("anchors/")}
         bundled_ca = files.get("certs/rfc3161-ca.pem")
     except (BundleError, UnicodeDecodeError, json.JSONDecodeError, ValueError) as e:
         out["problems"].append(str(e))
         return out
 
-    if not check("версия формата", manifest.get("format") == core.FORMAT_VERSION,
+    if not check("format version", manifest.get("format") == core.FORMAT_VERSION,
                  str(manifest.get("format"))):
         return out
 
@@ -389,16 +389,16 @@ def verify_bundle(path: str, config: Optional[dict] = None) -> dict:
         try:
             croot = core.content_root(store.fields_for_root(rec["fields"]))
         except core.FormatError as e:
-            check("запись seq=%d: поля" % seq, False, str(e))
+            check("record seq=%d: fields" % seq, False, str(e))
             return out
         link = core.link(bytes.fromhex(p["prev_link"]), seq, croot, rec["ts"])
-        if not check("запись seq=%d: содержимое и звено" % seq,
+        if not check("record seq=%d: content and link" % seq,
                      link.hex() == p["link"]):
             return out
         leaf = core.seg_leaf(link)
         got = core.apply_path(leaf, [(s["side"], bytes.fromhex(s["h"]))
                                      for s in p["segment_path"]])
-        if not check("запись seq=%d: путь до корня отрезка" % seq,
+        if not check("record seq=%d: path to the segment root" % seq,
                      got.hex() == segment["segment_root"]):
             return out
 
@@ -408,19 +408,19 @@ def verify_bundle(path: str, config: Optional[dict] = None) -> dict:
                        bytes.fromhex(segment["link_last"]),
                        bytes.fromhex(segment["segment_root"]),
                        bytes.fromhex(segment["prev_checkpoint"]))
-    if not check("отметка отрезка", ck.hex() == segment["checkpoint"]):
+    if not check("segment checkpoint", ck.hex() == segment["checkpoint"]):
         return out
 
     got = core.apply_path(core.day_leaf(ck),
                           [(s["side"], bytes.fromhex(s["h"]))
                            for s in proofs["day_path"]])
-    if not check("путь до суточного корня", got.hex() == day["day_root"]):
+    if not check("path to the daily root", got.hex() == day["day_root"]):
         return out
 
     dck = core.day_ckpt(day["realm_id"], day["date"], len(day["streams"]),
                         bytes.fromhex(day["day_root"]),
                         bytes.fromhex(day["prev_checkpoint"]))
-    if not check("суточная отметка", dck.hex() == day["day_checkpoint"]):
+    if not check("daily checkpoint", dck.hex() == day["day_checkpoint"]):
         return out
 
     target = dck
@@ -452,7 +452,7 @@ def verify_bundle(path: str, config: Optional[dict] = None) -> dict:
     out["anchors"] = anchor_results
     for res in anchor_results:
         if res["status"] == anchors_mod.FAILED:
-            check("пломба %s" % res["type"], False, res.get("detail", ""))
+            check("seal %s" % res["type"], False, res.get("detail", ""))
     if out["problems"]:
         return out
 

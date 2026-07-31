@@ -39,16 +39,17 @@ if (typeof require !== "undefined" && require.main === module) {
     console.error("использование: node aihash-verify.js <файл.seal>");
     process.exit(2);
   }
-  var WORD = { sealed: "сходится и запечатано",
-               unverified: "сходится, пломба стоит, но здесь не подтверждена",
-               open: "сходится, пломбы нет",
-               broken: "НЕ СХОДИТСЯ" };
-  var ANCHOR = { ok: "проверена", unverified: "не проверена", failed: "НЕ СХОДИТСЯ" };
+  var WORD = { sealed: "matches and is sealed",
+               unverified: "matches; a seal is present but not confirmed here",
+               open: "matches; no seal",
+               broken: "DOES NOT MATCH" };
+  var ANCHOR = { ok: "verified", unverified: "not verified", failed: "DOES NOT MATCH" };
   var HOW = {
-    rfc3161: "возьмите корневой сертификат службы штампов у неё самой (не из "
-      + "этого пакета) и сверьте подпись: openssl ts -verify -digest "
-      + "<суточная отметка> -in <файл.tsr> -CAfile <cacert.pem>",
-    opentimestamps: "поставьте клиент и повторите: "
+    rfc3161: "obtain the timestamp authority root certificate from the "
+      + "authority itself (not from this bundle) and check the signature: "
+      + "openssl ts -verify -digest <daily checkpoint> -in <file.tsr> "
+      + "-CAfile <cacert.pem>",
+    opentimestamps: "install the client and retry: "
       + "pip install opentimestamps-client"
   };
   function dt(ms) {
@@ -73,30 +74,30 @@ if (typeof require !== "undefined" && require.main === module) {
 
   module.exports.aihash.verify(bytes).then(function (r) {
     if (r.status === "broken") {
-      console.log("НЕ СХОДИТСЯ\n");
+      console.log("DOES NOT MATCH\n");
       r.problems.forEach(function (p) { console.log("  " + p); });
-      console.log("\nПрежнее содержимое не сохранено и восстановлению не подлежит —");
-      console.log("хранится только отпечаток. Определить, какое именно поле изменено,");
-      console.log("по отпечатку невозможно: он считается по записи целиком.");
+      console.log("\nThe previous content is not stored and cannot be recovered —");
+      console.log("only the fingerprint is kept. Which field was changed cannot be");
+      console.log("told from the fingerprint: it covers the record as a whole.");
       process.exit(1);
     }
     var m = r.manifest;
-    console.log("Пакет " + require("path").basename(path));
-    console.log("  журнал " + m.realm_id + ", поток " + m.stream_id +
-                ", отрезок " + m.period_id);
-    console.log("  раскрыто записей " + m.disclosed_of_total[0] + " из " +
-                m.disclosed_of_total[1] + " в отрезке");
+    console.log("Bundle " + require("path").basename(path));
+    console.log("  journal " + m.realm_id + ", stream " + m.stream_id +
+                ", segment " + m.period_id);
+    console.log("  " + m.disclosed_of_total[0] + " of " +
+                m.disclosed_of_total[1] + " records in the segment disclosed");
     console.log("");
-    r.checks.forEach(function (c) { console.log("  сходится: " + c.label); });
+    r.checks.forEach(function (c) { console.log("  matches: " + c.label); });
     console.log("");
     r.anchors.forEach(function (x) {
-      console.log("  пломба " + x.type + ": " + ANCHOR[x.status] + " — " + x.detail);
+      console.log("  seal " + x.type + ": " + ANCHOR[x.status] + " — " + x.detail);
     });
     console.log("");
-    console.log("Вывод: " + WORD[r.status] + ".");
+    console.log("Verdict: " + WORD[r.status] + ".");
     if (r.status === "unverified") {
-      console.log("Отсутствием пломбы это не является: пломба за эти сутки");
-      console.log("поставлена, не доведена до конца её проверка.");
+      console.log("This is not the same as having no seal: a seal was placed");
+      console.log("for these days; verifying it was not finished.");
       var seen = {};
       r.anchors.forEach(function (x) {
         if (x.status !== "unverified" || !x.placed || seen[x.type]) return;
@@ -105,8 +106,8 @@ if (typeof require !== "undefined" && require.main === module) {
       });
     }
     if (r.lower) {
-      console.log("Запись существовала не ранее " + dt(r.lower) + " (" + r.lowerSource + ")");
-      console.log("и не позднее постановки пломбы.");
+      console.log("The record existed no earlier than " + dt(r.lower) + " (" + r.lowerSource + ")");
+      console.log("and no later than the seal.");
     }
     process.exit(r.status === "sealed" ? 0 : 3);
   }).catch(function (e) {

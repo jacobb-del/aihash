@@ -209,10 +209,10 @@ def test_one_command_verifies_from_the_embedded_root_store(sealed, capsys):
     from aihash import cli
     assert cli.main(["verify", sealed]) == 0
     out = capsys.readouterr().out
-    assert "Запечатано суток: 1" in out, out
+    assert "Days sealed: 1" in out, out
     # Вердикт обязан называть, чем именно проверено: оспорить сам набор —
     # законный ход стороны спора, и ей должно быть, что оспаривать.
-    assert "набор корней версии" in out and "freetsa" in out, out
+    assert "root store version" in out and "freetsa" in out, out
 
 
 def test_stamp_of_an_unknown_authority_is_unconfirmed_not_unsealed(sealed, capsys):
@@ -234,24 +234,24 @@ def test_stamp_of_an_unknown_authority_is_unconfirmed_not_unsealed(sealed, capsy
     assert len(anchors) == 1
     assert anchors[0]["status"] == "unverified" and anchors[0]["placed"]
     # Получателю мало «не подтверждена»: он обязан узнать, какой корень нужен.
-    assert "отпечаток" in anchors[0]["detail"], anchors[0]["detail"]
+    assert "fingerprint" in anchors[0]["detail"], anchors[0]["detail"]
     assert _fingerprint_of(CA)[:16] in anchors[0]["detail"], anchors[0]["detail"]
 
     from aihash import cli
     assert cli.main(["verify", sealed, "--trust-store", empty]) == 0
     out = capsys.readouterr().out
-    assert "Не запечатано суток" not in out, \
+    assert "Days not sealed" not in out, \
         "верификатор объявил незапечатанным журнал с настоящим штампом:\n%s" % out
-    assert "не подтверждена" in out, out
-    assert "rfc3161" in out and "относится к этой отметке" in out, out
+    assert "not confirmed here" in out, out
+    assert "rfc3161" in out and "covers this checkpoint" in out, out
     assert "--tsa-ca" in out, "не сказано, чем достроить проверку:\n%s" % out
 
     for name, cmd in EXTERNAL:
         rc, text = _run(cmd, sealed)
         assert rc == 0, "%s отверг исправный журнал:\n%s" % (name, text)
-        assert "Не запечатано суток" not in text, \
+        assert "Days not sealed" not in text, \
             "%s объявил незапечатанным журнал со штампом:\n%s" % (name, text)
-        assert "не подтверждена" in text, \
+        assert "not confirmed here" in text, \
             "%s не назвал состояние пломбы:\n%s" % (name, text)
 
 
@@ -302,12 +302,12 @@ def test_journal_without_any_anchor_still_says_unsealed(sealed, capsys):
     from aihash import cli
     assert cli.main(["verify", sealed]) == 0
     out = capsys.readouterr().out
-    assert "Не запечатано суток" in out, out
-    assert "не подтверждена" not in out, out
+    assert "Days not sealed" in out, out
+    assert "not confirmed here" not in out, out
 
     for name, cmd in EXTERNAL:
         rc, text = _run(cmd, sealed)
-        assert rc == 0 and "Не запечатано суток" in text, \
+        assert rc == 0 and "Days not sealed" in text, \
             "%s не сказал, что пломбы нет:\n%s" % (name, text)
 
 
@@ -350,7 +350,7 @@ def test_forged_journal_is_caught_by_the_stamp_alone(sealed):
                       "и вся защита сводится к нашему собственному коду")
     joined = " ".join(r.problems)
     assert "rfc3161" in joined, joined
-    assert "не на эту суточную отметку" in joined, joined
+    assert "not placed on this daily checkpoint" in joined, joined
 
     missed = []
     for name, cmd in EXTERNAL:
@@ -425,7 +425,7 @@ def test_forged_stamp_with_its_own_root_in_the_bundle_is_not_accepted(
         "ПАКЕТ ЗАВЕРИЛ САМ СЕБЯ: корень из пакета создал доверие"
     assert cli.main(["verify", out]) != 0, "поддельный пакет вернул ноль"
     text = capsys.readouterr().out
-    assert "не подтверждена" in text or "не проверена" in text, text
+    assert "not confirmed here" in text or "не подтверждена" in text, text
 
     # Тот же журнал проходит, если корень взять снаружи явным указанием. Это и
     # доказывает, что разница ровно в одном — откуда пришло доверие.
@@ -457,7 +457,7 @@ def test_root_impersonating_a_known_authority_is_an_accusation(sealed, tmp_path)
                               bytes.fromhex(day["day_checkpoint"]), {})
     assert res["status"] == anchors.FAILED, \
         "подмена известного корня осталась незамеченной: %s" % res["detail"]
-    assert "freetsa" in res["detail"] and "другой ключ" in res["detail"], \
+    assert "freetsa" in res["detail"] and "different key" in res["detail"], \
         res["detail"]
 
 
@@ -517,4 +517,4 @@ def test_live_round_trip_against_the_authority(tmp_path):
 
     r = verify.verify_journal(root, {"tsa_ca": CA})
     assert not r.ok, "живой штамп не поймал подделку"
-    assert "не на эту суточную отметку" in " ".join(r.problems)
+    assert "not placed on this daily checkpoint" in " ".join(r.problems)
